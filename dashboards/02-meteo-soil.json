@@ -1,0 +1,910 @@
+{
+    "uid": "meteo-soil",
+    "title": "🌤️ Метео и почва — Meteo & Soil",
+    "description": "Погодные ряды и профиль влажности/температуры почвы по глубинам",
+    "tags": [
+        "wheat",
+        "iot",
+        "meteo",
+        "soil"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "editable": true,
+    "graphTooltip": 1,
+    "refresh": "",
+    "time": {
+        "from": "2024-05-01T00:00:00.000Z",
+        "to": "2024-09-30T23:59:59.000Z"
+    },
+    "templating": {
+        "list": [
+            {
+                "name": "field_id",
+                "label": "Поле",
+                "type": "query",
+                "datasource": {
+                    "type": "influxdb",
+                    "uid": "influxdb"
+                },
+                "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: -3y)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> keep(columns: [\"field_id\"])\n  |> distinct(column: \"field_id\")\n  |> keep(columns: [\"_value\"])",
+                "current": {
+                    "text": "field_01",
+                    "value": "field_01"
+                },
+                "refresh": 1,
+                "includeAll": false,
+                "multi": false,
+                "sort": 1
+            }
+        ]
+    },
+    "panels": [
+        {
+            "id": 1,
+            "type": "text",
+            "title": "",
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "options": {
+                "mode": "markdown",
+                "content": "## 🌤️ Метеоданные и почвенный профиль — поле `${field_id}`\n**Источник:** Open-Meteo Historical API (ERA5-Land)  •  **Период:** 2024-05-01 → 2024-09-30  •  **Шаг:** 1 сутки"
+            }
+        },
+        {
+            "id": 2,
+            "type": "timeseries",
+            "title": "🌡️ Температура воздуха + Влажность",
+            "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 2
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "lineWidth": 2,
+                        "fillOpacity": 10,
+                        "gradientMode": "scheme",
+                        "showPoints": "never",
+                        "axisPlacement": "auto"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": ".*temperature.*"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "celsius"
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "left"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "Температура (°C)"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#FF6D00",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": ".*humidity.*"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "percent"
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "Влажность (%)"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#6E96FF",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 5
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "temperature_max"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#F2495C",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "custom.lineStyle",
+                                "value": {
+                                    "fill": "dash",
+                                    "dash": [
+                                        10,
+                                        5
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "temperature_min"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#5794F2",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "custom.lineStyle",
+                                "value": {
+                                    "fill": "dash",
+                                    "dash": [
+                                        10,
+                                        5
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "mean",
+                        "max",
+                        "min"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"temperature_mean\" or r._field == \"temperature_max\" or r._field == \"temperature_min\" or r._field == \"humidity\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "type": "timeseries",
+            "title": "🌧️ Осадки + 💨 Скорость ветра",
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 11
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "precipitation"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "mm"
+                            },
+                            {
+                                "id": "custom.drawStyle",
+                                "value": "bars"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 70
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "left"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "Осадки (мм)"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#3274D9",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "wind_speed"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "m/s"
+                            },
+                            {
+                                "id": "custom.drawStyle",
+                                "value": "line"
+                            },
+                            {
+                                "id": "custom.lineWidth",
+                                "value": 2
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 5
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "Ветер (м/с)"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#8AB8FF",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "sum",
+                        "max"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"precipitation\" or r._field == \"wind_speed\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "type": "timeseries",
+            "title": "☀️ Солнечная радиация + 🌿 Эвапотранспирация",
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 11
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "lineWidth": 2,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "solar_radiation"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "kwattm2"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 20
+                            },
+                            {
+                                "id": "custom.gradientMode",
+                                "value": "scheme"
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "left"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "Радиация (кВт·ч/м²)"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#FF9830",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "evapotranspiration"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "mm"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 10
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "ET₀ (мм)"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#73BF69",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "mean",
+                        "sum"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"solar_radiation\" or r._field == \"evapotranspiration\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "type": "timeseries",
+            "title": "💧 Влажность почвы по глубинам",
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 20
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percentunit",
+                    "custom": {
+                        "lineWidth": 2,
+                        "fillOpacity": 15,
+                        "gradientMode": "scheme",
+                        "showPoints": "never"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#F2495C",
+                                "value": null
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 0.15
+                            },
+                            {
+                                "color": "#73BF69",
+                                "value": 0.25
+                            }
+                        ]
+                    },
+                    "custom.thresholdsStyle": {
+                        "mode": "line"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": ".*0_7cm.*"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#3274D9",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "0–7 см"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": ".*7_28cm.*"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#56A64B",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "7–28 см"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": ".*28_100cm.*"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#FF9830",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "28–100 см"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "mean",
+                        "min",
+                        "lastNotNull"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_dynamic\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"moisture\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "type": "timeseries",
+            "title": "🌡️ Температура почвы по глубинам",
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 20
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "celsius",
+                    "custom": {
+                        "lineWidth": 2,
+                        "fillOpacity": 15,
+                        "gradientMode": "scheme",
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": ".*0_7cm.*"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#F2495C",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "0–7 см"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": ".*7_28cm.*"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#FF9830",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "7–28 см"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": ".*28_100cm.*"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#A352CC",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "28–100 см"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "mean",
+                        "max",
+                        "min"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_dynamic\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"temperature\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "type": "gauge",
+            "title": "🧪 Статические свойства почвы",
+            "gridPos": {
+                "h": 7,
+                "w": 12,
+                "x": 0,
+                "y": 29
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "min": 0,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#F2495C",
+                                "value": null
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 5
+                            },
+                            {
+                                "color": "#73BF69",
+                                "value": 6.5
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 7.5
+                            },
+                            {
+                                "color": "#F2495C",
+                                "value": 8.5
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "ph"
+                        },
+                        "properties": [
+                            {
+                                "id": "max",
+                                "value": 10
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "pH"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "organic_carbon"
+                        },
+                        "properties": [
+                            {
+                                "id": "max",
+                                "value": 40
+                            },
+                            {
+                                "id": "unit",
+                                "value": "g/kg"
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Орг. углерод"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "nitrogen"
+                        },
+                        "properties": [
+                            {
+                                "id": "max",
+                                "value": 5
+                            },
+                            {
+                                "id": "unit",
+                                "value": "g/kg"
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Азот"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "showThresholdLabels": true,
+                "showThresholdMarkers": true
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2024-01-01T00:00:00Z, stop: 2025-01-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"soil_static\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"ph\" or r._field == \"organic_carbon\" or r._field == \"nitrogen\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "type": "piechart",
+            "title": "🏔️ Гранулометрический состав",
+            "gridPos": {
+                "h": 7,
+                "w": 12,
+                "x": 12,
+                "y": 29
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent",
+                    "color": {
+                        "mode": "palette-classic"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "sand_pct"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Песок"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "silt_pct"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Пыль"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "clay_pct"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Глина"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "pieType": "donut",
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "right",
+                    "values": [
+                        "value",
+                        "percent"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "single"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2024-01-01T00:00:00Z, stop: 2025-01-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"soil_static\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"sand_pct\" or r._field == \"silt_pct\" or r._field == \"clay_pct\")\n  |> last()"
+                }
+            ]
+        }
+    ]
+}

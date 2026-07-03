@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  influxdb:
+    image: docker.io/library/influxdb:2.7
+    container_name: wheat-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: admin12345
+      DOCKER_INFLUXDB_INIT_ORG: wheat-farm
+      DOCKER_INFLUXDB_INIT_BUCKET: wheat_monitoring
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: wheat-monitoring-token-2024
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    networks:
+      - wheat-net
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  grafana:
+    image: docker.io/grafana/grafana-oss:10.4.0
+    container_name: wheat-grafana
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/01-farm-overview.json
+      GF_INSTALL_PLUGINS: grafana-worldmap-panel
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:z
+      - ./dashboards:/var/lib/grafana/dashboards:z
+      - grafana-data:/var/lib/grafana
+    networks:
+      - wheat-net
+
+volumes:
+  influxdb-data:
+  grafana-data:
+
+networks:
+  wheat-net:
+    driver: bridge

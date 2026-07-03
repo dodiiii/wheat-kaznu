@@ -1,0 +1,455 @@
+{
+  "uid": "farm-overview",
+  "title": "🌾 Обзор хозяйства — Farm Overview",
+  "description": "KPI по всем полям, карта полей, сводка состояния",
+  "tags": ["wheat", "iot", "overview"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "refresh": "",
+  "time": {
+    "from": "2024-05-01T00:00:00.000Z",
+    "to": "2024-09-30T23:59:59.000Z"
+  },
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "gridPos": {"h": 2, "w": 24, "x": 0, "y": 0},
+      "options": {
+        "mode": "markdown",
+        "content": "## 🌾 IoT-мониторинг пшеничных полей — Костанайская область\n**Источники:** Open-Meteo Historical API (ERA5), SoilGrids  •  **Период:** 2024-05-01 → 2024-09-30  •  **Лицензия:** CC BY 4.0"
+      }
+    },
+    {
+      "id": 2,
+      "type": "geomap",
+      "title": "📍 Карта полей",
+      "gridPos": {"h": 12, "w": 12, "x": 0, "y": 2},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "options": {
+        "view": {
+          "id": "coords",
+          "lat": 52.03,
+          "lon": 63.65,
+          "zoom": 10
+        },
+        "basemap": {
+          "type": "osm-standard",
+          "name": "OpenStreetMap"
+        },
+        "layers": [
+          {
+            "type": "markers",
+            "name": "Fields",
+            "config": {
+              "showLegend": true,
+              "style": {
+                "size": {"fixed": 12},
+                "color": {"fixed": "#73BF69"},
+                "symbol": {"fixed": "img/icons/marker/circle.svg"}
+              }
+            },
+            "location": {
+              "mode": "auto"
+            }
+          }
+        ],
+        "tooltip": {"mode": "details"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r._field == \"temperature_mean\")\n  |> last()\n  |> map(fn: (r) => ({\n    r with\n    latitude: float(v: r.lat),\n    longitude: float(v: r.lon),\n    name: r.field_name\n  }))\n  |> keep(columns: [\"latitude\", \"longitude\", \"name\", \"field_id\", \"_value\"])\n  |> rename(columns: {_value: \"temperature\"})"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "🌡️ Средняя температура",
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 2},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "#6E96FF", "value": null},
+              {"color": "#73BF69", "value": 10},
+              {"color": "#FF9830", "value": 25},
+              {"color": "#F2495C", "value": 35}
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {"calcs": ["mean"]},
+        "textMode": "value_and_name",
+        "graphMode": "area",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r._field == \"temperature_mean\")\n  |> mean()\n  |> group()\n  |> mean()"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "🌧️ Всего осадков",
+      "gridPos": {"h": 4, "w": 4, "x": 16, "y": 2},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "mm",
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "#F2495C", "value": null},
+              {"color": "#FF9830", "value": 100},
+              {"color": "#73BF69", "value": 200},
+              {"color": "#6E96FF", "value": 400}
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {"calcs": ["sum"]},
+        "textMode": "value_and_name",
+        "graphMode": "area",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r._field == \"precipitation\")\n  |> sum()\n  |> group()\n  |> mean()"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "🌱 Средний NDVI",
+      "gridPos": {"h": 4, "w": 4, "x": 20, "y": 2},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 2,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "#F2495C", "value": null},
+              {"color": "#FF9830", "value": 0.3},
+              {"color": "#73BF69", "value": 0.5},
+              {"color": "#56A64B", "value": 0.7}
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]},
+        "textMode": "value_and_name",
+        "graphMode": "area",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r._field == \"ndvi\")\n  |> last()\n  |> group()\n  |> mean()"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "💧 Влажность почвы (0-7 см)",
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 6},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "#F2495C", "value": null},
+              {"color": "#FF9830", "value": 0.15},
+              {"color": "#73BF69", "value": 0.25},
+              {"color": "#6E96FF", "value": 0.40}
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]},
+        "textMode": "value_and_name",
+        "graphMode": "area",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_dynamic\")\n  |> filter(fn: (r) => r._field == \"moisture\")\n  |> filter(fn: (r) => r.depth == \"0_7cm\")\n  |> last()\n  |> group()\n  |> mean()"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "📈 Прогноз урожайности",
+      "gridPos": {"h": 4, "w": 4, "x": 16, "y": 6},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {"suffix": " т/га"},
+          "decimals": 1,
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "#F2495C", "value": null},
+              {"color": "#FF9830", "value": 2},
+              {"color": "#73BF69", "value": 3},
+              {"color": "#56A64B", "value": 4}
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {"calcs": ["lastNotNull"]},
+        "textMode": "value_and_name",
+        "graphMode": "area",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r._field == \"yield_forecast\")\n  |> last()\n  |> group()\n  |> mean()"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "⚠️ Очаги вредителей",
+      "gridPos": {"h": 4, "w": 4, "x": 20, "y": 6},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": {"mode": "thresholds"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "#73BF69", "value": null},
+              {"color": "#FF9830", "value": 10},
+              {"color": "#F2495C", "value": 30}
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": {"calcs": ["sum"]},
+        "textMode": "value_and_name",
+        "graphMode": "none",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"pest_disease\")\n  |> filter(fn: (r) => r._field == \"outbreak\")\n  |> filter(fn: (r) => r._value == 1)\n  |> group()\n  |> count()"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "🌡️ Температура по полям",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 10},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "gradientMode": "scheme",
+            "showPoints": "never"
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "min"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r._field == \"temperature_mean\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "🌧️ Осадки по полям",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 14},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "mm",
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 60,
+            "gradientMode": "scheme",
+            "lineWidth": 1
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["sum"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r._field == \"precipitation\")\n  |> aggregateWindow(every: 1d, fn: sum, createEmpty: false)"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "🌱 NDVI по полям",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 18},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 2,
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "showPoints": "never"
+          },
+          "color": {"mode": "palette-classic"},
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "#F2495C", "value": null},
+              {"color": "#FF9830", "value": 0.3},
+              {"color": "#73BF69", "value": 0.5}
+            ]
+          }
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r._field == \"ndvi\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "table",
+      "title": "📊 Сводка по полям",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "yield_forecast"},
+            "properties": [
+              {"id": "unit", "value": "short"},
+              {"id": "custom.displayMode", "value": "gradient-gauge"},
+              {"id": "min", "value": 0},
+              {"id": "max", "value": 5}
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "sortBy": [{"displayName": "field_id", "desc": false}]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r._field == \"yield_forecast\" or r._field == \"gdd_cumulative\" or r._field == \"ndvi\")\n  |> last()\n  |> pivot(rowKey: [\"field_id\"], columnKey: [\"_field\"], valueColumn: \"_value\")"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "📈 GDD накопление по полям",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 26},
+      "datasource": {"type": "influxdb", "uid": "influxdb"},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "showPoints": "never"
+          },
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {
+        "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"]},
+        "tooltip": {"mode": "multi", "sort": "desc"}
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "influxdb", "uid": "influxdb"},
+          "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r._field == \"gdd_cumulative\")\n  |> aggregateWindow(every: 1d, fn: last, createEmpty: false)"
+        }
+      ]
+    }
+  ]
+}

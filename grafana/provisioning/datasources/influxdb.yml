@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    uid: influxdb
+    isDefault: true
+    jsonData:
+      version: Flux
+      organization: wheat-farm
+      defaultBucket: wheat_monitoring
+      tlsSkipVerify: true
+    secureJsonData:
+      token: wheat-monitoring-token-2024
+    editable: true

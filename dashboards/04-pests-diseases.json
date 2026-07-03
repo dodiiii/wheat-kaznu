@@ -1,0 +1,551 @@
+{
+    "uid": "pests-diseases",
+    "title": "🐛 Вредители и болезни",
+    "tags": [
+        "wheat",
+        "iot",
+        "pests"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+        "from": "2024-05-01T00:00:00.000Z",
+        "to": "2024-09-30T23:59:59.000Z"
+    },
+    "templating": {
+        "list": [
+            {
+                "name": "field_id",
+                "label": "Поле",
+                "type": "query",
+                "datasource": {
+                    "type": "influxdb",
+                    "uid": "influxdb"
+                },
+                "query": "from(bucket: \"wheat_monitoring\") |> range(start: -3y) |> filter(fn: (r) => r._measurement == \"weather\") |> keep(columns: [\"field_id\"]) |> distinct(column: \"field_id\") |> keep(columns: [\"_value\"])",
+                "current": {
+                    "text": "field_01",
+                    "value": "field_01"
+                },
+                "refresh": 1,
+                "sort": 1
+            }
+        ]
+    },
+    "panels": [
+        {
+            "id": 1,
+            "type": "text",
+            "title": "",
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "options": {
+                "mode": "markdown",
+                "content": "## 🐛 Вредители и болезни — поле `${field_id}`\n**Типы:** ржавчина, мучнистая роса, фузариоз, тля, септориоз  •  **Шкала:** 1–10  •  **Данные:** синтез корреляцией с погодой"
+            }
+        },
+        {
+            "id": 2,
+            "type": "stat",
+            "title": "⚠️ Очаги (sev≥6)",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 0,
+                "y": 2
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#73BF69",
+                                "value": null
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 5
+                            },
+                            {
+                                "color": "#F2495C",
+                                "value": 15
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ]
+                },
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"outbreak\") |> filter(fn: (r) => r._value == 1) |> group() |> count()"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "type": "stat",
+            "title": "📊 Средн. тяжесть",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 6,
+                "y": 2
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "decimals": 1,
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#73BF69",
+                                "value": null
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 4
+                            },
+                            {
+                                "color": "#F2495C",
+                                "value": 7
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "mean"
+                    ]
+                },
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> group() |> mean()"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "type": "stat",
+            "title": "🌿 Сорняки %",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 12,
+                "y": 2
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percent",
+                    "decimals": 1,
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#73BF69",
+                                "value": null
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 10
+                            },
+                            {
+                                "color": "#F2495C",
+                                "value": 20
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "mean"
+                    ]
+                },
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"weed_coverage\") |> group() |> mean()"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "type": "stat",
+            "title": "🔢 Всего событий",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 18,
+                "y": 2
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#73BF69",
+                                "value": null
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 50
+                            },
+                            {
+                                "color": "#F2495C",
+                                "value": 100
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "sum"
+                    ]
+                },
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> group() |> count()"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "type": "heatmap",
+            "title": "🔥 Тепловая карта тяжести",
+            "gridPos": {
+                "h": 10,
+                "w": 24,
+                "x": 0,
+                "y": 6
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "options": {
+                "calculate": true,
+                "calculation": {
+                    "xBuckets": {
+                        "mode": "size",
+                        "value": "1d"
+                    },
+                    "yBuckets": {
+                        "mode": "count",
+                        "value": 5
+                    }
+                },
+                "color": {
+                    "mode": "scheme",
+                    "scheme": "RdYlGn",
+                    "reverse": true,
+                    "min": 0,
+                    "max": 10
+                },
+                "cellGap": 1,
+                "tooltip": {
+                    "show": true
+                },
+                "legend": {
+                    "show": true
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> aggregateWindow(every: 1d, fn: max, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "type": "timeseries",
+            "title": "📊 Тяжесть по типам",
+            "gridPos": {
+                "h": 10,
+                "w": 12,
+                "x": 0,
+                "y": 16
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "min": 0,
+                    "max": 10,
+                    "custom": {
+                        "lineWidth": 2,
+                        "fillOpacity": 15,
+                        "showPoints": "auto",
+                        "pointSize": 5
+                    },
+                    "color": {
+                        "mode": "palette-classic"
+                    }
+                }
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "mean",
+                        "max"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> aggregateWindow(every: 1d, fn: max, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "type": "timeseries",
+            "title": "🔗 Тяжесть vs Влажность + GDD",
+            "gridPos": {
+                "h": 10,
+                "w": 12,
+                "x": 12,
+                "y": 16
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "lineWidth": 2,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": ".*severity.*"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.drawStyle",
+                                "value": "bars"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 60
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "left"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#F2495C",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Макс. тяжесть"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": ".*humidity.*"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "percent"
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#3274D9",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Влажность"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": ".*gdd.*"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "hidden"
+                            },
+                            {
+                                "id": "custom.lineStyle",
+                                "value": {
+                                    "fill": "dash"
+                                }
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#FF9830",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "GDD"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom"
+                },
+                "tooltip": {
+                    "mode": "multi"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> group() |> aggregateWindow(every: 1d, fn: max, createEmpty: false)"
+                },
+                {
+                    "refId": "B",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"weather\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"humidity\") |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                },
+                {
+                    "refId": "C",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"growth\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"gdd_cumulative\") |> aggregateWindow(every: 1d, fn: last, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "type": "table",
+            "title": "📋 Журнал вспышек (sev≥6)",
+            "gridPos": {
+                "h": 8,
+                "w": 24,
+                "x": 0,
+                "y": 26
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "severity"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.displayMode",
+                                "value": "gradient-gauge"
+                            },
+                            {
+                                "id": "min",
+                                "value": 0
+                            },
+                            {
+                                "id": "max",
+                                "value": 10
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "showHeader": true
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> filter(fn: (r) => r._value >= 6) |> keep(columns: [\"_time\", \"pest_type\", \"_value\", \"field_id\"]) |> rename(columns: {_value: \"severity\"}) |> sort(columns: [\"_time\"], desc: true)"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,1033 @@
+{
+    "uid": "growth-factors",
+    "title": "🌱 Факторы роста — Growth Factors",
+    "description": "GDD, фазы роста BBCH, NDVI, прогноз урожайности",
+    "tags": [
+        "wheat",
+        "iot",
+        "growth",
+        "gdd"
+    ],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "editable": true,
+    "graphTooltip": 1,
+    "refresh": "",
+    "time": {
+        "from": "2024-05-01T00:00:00.000Z",
+        "to": "2024-09-30T23:59:59.000Z"
+    },
+    "templating": {
+        "list": [
+            {
+                "name": "field_id",
+                "label": "Поле",
+                "type": "query",
+                "datasource": {
+                    "type": "influxdb",
+                    "uid": "influxdb"
+                },
+                "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: -3y)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> keep(columns: [\"field_id\"])\n  |> distinct(column: \"field_id\")\n  |> keep(columns: [\"_value\"])",
+                "current": {
+                    "text": "field_01",
+                    "value": "field_01"
+                },
+                "refresh": 1,
+                "includeAll": false,
+                "multi": false,
+                "sort": 1
+            }
+        ]
+    },
+    "panels": [
+        {
+            "id": 1,
+            "type": "text",
+            "title": "",
+            "gridPos": {
+                "h": 2,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "options": {
+                "mode": "markdown",
+                "content": "## 🌱 Факторы роста — поле `${field_id}`\n**GDD** = Σ max(0, T_mean − 0°C)  •  **Фазы BBCH** рассчитаны по накопл. GDD  •  **NDVI** — синтетическая кривая по GDD  •  **Прогноз урожайности** — эмпирическая модель (GDD × осадки)"
+            }
+        },
+        {
+            "id": 2,
+            "type": "timeseries",
+            "title": "📈 Накопление GDD + Фаза роста",
+            "gridPos": {
+                "h": 10,
+                "w": 16,
+                "x": 0,
+                "y": 2
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "lineWidth": 2,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "gdd_cumulative"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "short"
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "left"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "GDD (°C·дни)"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 15
+                            },
+                            {
+                                "id": "custom.gradientMode",
+                                "value": "scheme"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#FF6D00",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "GDD накопл."
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "gdd_daily"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "short"
+                            },
+                            {
+                                "id": "custom.drawStyle",
+                                "value": "bars"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 50
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "GDD/сут"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#FADE2A",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "GDD/сут"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "lastNotNull",
+                        "sum",
+                        "mean"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"gdd_cumulative\" or r._field == \"gdd_daily\")\n  |> aggregateWindow(every: 1d, fn: last, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "type": "stat",
+            "title": "🌾 Текущий GDD",
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 16,
+                "y": 2
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#6E96FF",
+                                "value": null
+                            },
+                            {
+                                "color": "#73BF69",
+                                "value": 500
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 1200
+                            },
+                            {
+                                "color": "#F2495C",
+                                "value": 1700
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "textMode": "value",
+                "graphMode": "area",
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"gdd_cumulative\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "type": "stat",
+            "title": "📊 Фаза BBCH",
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 20,
+                "y": 2
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#73BF69",
+                                "value": null
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "textMode": "value",
+                "graphMode": "none",
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"growth_stage\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "type": "gauge",
+            "title": "🌾 Прогноз урожайности (т/га)",
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 16,
+                "y": 7
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "min": 0,
+                    "max": 6,
+                    "decimals": 1,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#F2495C",
+                                "value": null
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 2
+                            },
+                            {
+                                "color": "#73BF69",
+                                "value": 3
+                            },
+                            {
+                                "color": "#56A64B",
+                                "value": 4
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "showThresholdLabels": true,
+                "showThresholdMarkers": true
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"yield_forecast\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "type": "stat",
+            "title": "🌿 Текущий NDVI",
+            "gridPos": {
+                "h": 5,
+                "w": 4,
+                "x": 20,
+                "y": 7
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "none",
+                    "decimals": 3,
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#F2495C",
+                                "value": null
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 0.3
+                            },
+                            {
+                                "color": "#73BF69",
+                                "value": 0.5
+                            },
+                            {
+                                "color": "#56A64B",
+                                "value": 0.7
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "textMode": "value",
+                "graphMode": "area",
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"ndvi\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "type": "timeseries",
+            "title": "🌿 NDVI + 💧 Влажность почвы (0–7 см)",
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 0,
+                "y": 12
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "lineWidth": 2,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "ndvi"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "left"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "NDVI"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 20
+                            },
+                            {
+                                "id": "custom.gradientMode",
+                                "value": "scheme"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#56A64B",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "min",
+                                "value": 0
+                            },
+                            {
+                                "id": "max",
+                                "value": 1
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "NDVI"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "moisture"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "percentunit"
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "Влажность (м³/м³)"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 10
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#3274D9",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Влажность почвы 0-7 см"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "mean",
+                        "max",
+                        "lastNotNull"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"ndvi\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_dynamic\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r.depth == \"0_7cm\")\n  |> filter(fn: (r) => r._field == \"moisture\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "type": "timeseries",
+            "title": "🌡️ GDD vs Температура",
+            "gridPos": {
+                "h": 9,
+                "w": 12,
+                "x": 12,
+                "y": 12
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "lineWidth": 2,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "gdd_daily"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "short"
+                            },
+                            {
+                                "id": "custom.drawStyle",
+                                "value": "bars"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 50
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "GDD/сут"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#FF9830",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "GDD дневной"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "temperature_mean"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "celsius"
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "left"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "Температура (°C)"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 10
+                            },
+                            {
+                                "id": "custom.gradientMode",
+                                "value": "scheme"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#F2495C",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Температура средн."
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "mean",
+                        "sum"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"gdd_daily\")\n  |> aggregateWindow(every: 1d, fn: last, createEmpty: false)"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"temperature_mean\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "type": "timeseries",
+            "title": "📈 Прогноз урожайности + GDD + NDVI",
+            "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 21
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "lineWidth": 2,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "yield_forecast"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "short"
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "left"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "Урожайность (т/га)"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 20
+                            },
+                            {
+                                "id": "custom.gradientMode",
+                                "value": "scheme"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#73BF69",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Прогноз (т/га)"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "ndvi"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "NDVI"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 5
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#56A64B",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "NDVI"
+                            },
+                            {
+                                "id": "min",
+                                "value": 0
+                            },
+                            {
+                                "id": "max",
+                                "value": 1
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "gdd_cumulative"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "short"
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "hidden"
+                            },
+                            {
+                                "id": "custom.lineStyle",
+                                "value": {
+                                    "fill": "dash",
+                                    "dash": [
+                                        10,
+                                        5
+                                    ]
+                                }
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#FF9830",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "GDD (накопл.)"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "lastNotNull",
+                        "mean",
+                        "max"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"yield_forecast\" or r._field == \"ndvi\" or r._field == \"gdd_cumulative\")\n  |> aggregateWindow(every: 1d, fn: last, createEmpty: false)"
+                }
+            ]
+        },
+        {
+            "id": 10,
+            "type": "timeseries",
+            "title": "🌡️ NDVI vs Температура + Осадки",
+            "gridPos": {
+                "h": 9,
+                "w": 24,
+                "x": 0,
+                "y": 30
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "custom": {
+                        "lineWidth": 2,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "ndvi"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "left"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "NDVI"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 20
+                            },
+                            {
+                                "id": "custom.gradientMode",
+                                "value": "scheme"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#56A64B",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "NDVI"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "temperature_mean"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "celsius"
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            },
+                            {
+                                "id": "custom.axisLabel",
+                                "value": "Температура (°C)"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 5
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#FF6D00",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Температура"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "precipitation"
+                        },
+                        "properties": [
+                            {
+                                "id": "unit",
+                                "value": "mm"
+                            },
+                            {
+                                "id": "custom.drawStyle",
+                                "value": "bars"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 40
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "hidden"
+                            },
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "#3274D9",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "displayName",
+                                "value": "Осадки"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "calcs": [
+                        "mean",
+                        "max"
+                    ]
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"ndvi\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                },
+                {
+                    "refId": "B",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"temperature_mean\" or r._field == \"precipitation\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                }
+            ]
+        }
+    ]
+}
