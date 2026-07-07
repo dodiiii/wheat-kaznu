@@ -696,7 +696,7 @@
         },
         {
             "id": 7,
-            "type": "gauge",
+            "type": "bargauge",
             "title": "🧪 Статические свойства почвы",
             "gridPos": {
                 "h": 7,
@@ -711,28 +711,19 @@
             "fieldConfig": {
                 "defaults": {
                     "min": 0,
+                    "color": {
+                        "mode": "thresholds"
+                    },
                     "thresholds": {
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "#F2495C",
+                                "color": "#6E96FF",
                                 "value": null
                             },
                             {
-                                "color": "#FF9830",
-                                "value": 5
-                            },
-                            {
                                 "color": "#73BF69",
-                                "value": 6.5
-                            },
-                            {
-                                "color": "#FF9830",
-                                "value": 7.5
-                            },
-                            {
-                                "color": "#F2495C",
-                                "value": 8.5
+                                "value": 1
                             }
                         ]
                     }
@@ -745,12 +736,44 @@
                         },
                         "properties": [
                             {
-                                "id": "max",
-                                "value": 10
+                                "id": "displayName",
+                                "value": "pH почвы"
                             },
                             {
-                                "id": "displayName",
-                                "value": "pH"
+                                "id": "min",
+                                "value": 4
+                            },
+                            {
+                                "id": "max",
+                                "value": 9
+                            },
+                            {
+                                "id": "thresholds",
+                                "value": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "#F2495C",
+                                            "value": null
+                                        },
+                                        {
+                                            "color": "#FF9830",
+                                            "value": 5.5
+                                        },
+                                        {
+                                            "color": "#73BF69",
+                                            "value": 6.5
+                                        },
+                                        {
+                                            "color": "#FADE2A",
+                                            "value": 7.5
+                                        },
+                                        {
+                                            "color": "#F2495C",
+                                            "value": 8.5
+                                        }
+                                    ]
+                                }
                             }
                         ]
                     },
@@ -761,16 +784,44 @@
                         },
                         "properties": [
                             {
+                                "id": "displayName",
+                                "value": "Орг. углерод (г/кг)"
+                            },
+                            {
+                                "id": "unit",
+                                "value": "short"
+                            },
+                            {
+                                "id": "min",
+                                "value": 0
+                            },
+                            {
                                 "id": "max",
                                 "value": 40
                             },
                             {
-                                "id": "unit",
-                                "value": "g/kg"
-                            },
-                            {
-                                "id": "displayName",
-                                "value": "Орг. углерод"
+                                "id": "thresholds",
+                                "value": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "#F2495C",
+                                            "value": null
+                                        },
+                                        {
+                                            "color": "#FF9830",
+                                            "value": 10
+                                        },
+                                        {
+                                            "color": "#73BF69",
+                                            "value": 15
+                                        },
+                                        {
+                                            "color": "#56A64B",
+                                            "value": 20
+                                        }
+                                    ]
+                                }
                             }
                         ]
                     },
@@ -781,16 +832,44 @@
                         },
                         "properties": [
                             {
+                                "id": "displayName",
+                                "value": "Азот (г/кг)"
+                            },
+                            {
+                                "id": "unit",
+                                "value": "short"
+                            },
+                            {
+                                "id": "min",
+                                "value": 0
+                            },
+                            {
                                 "id": "max",
                                 "value": 5
                             },
                             {
-                                "id": "unit",
-                                "value": "g/kg"
-                            },
-                            {
-                                "id": "displayName",
-                                "value": "Азот"
+                                "id": "thresholds",
+                                "value": {
+                                    "mode": "absolute",
+                                    "steps": [
+                                        {
+                                            "color": "#F2495C",
+                                            "value": null
+                                        },
+                                        {
+                                            "color": "#FF9830",
+                                            "value": 1
+                                        },
+                                        {
+                                            "color": "#73BF69",
+                                            "value": 1.5
+                                        },
+                                        {
+                                            "color": "#56A64B",
+                                            "value": 2.5
+                                        }
+                                    ]
+                                }
                             }
                         ]
                     }
@@ -802,8 +881,14 @@
                         "lastNotNull"
                     ]
                 },
-                "showThresholdLabels": true,
-                "showThresholdMarkers": true
+                "orientation": "horizontal",
+                "displayMode": "lcd",
+                "valueMode": "color",
+                "showUnfilled": true,
+                "text": {
+                    "titleSize": 12,
+                    "valueSize": 18
+                }
             },
             "targets": [
                 {
