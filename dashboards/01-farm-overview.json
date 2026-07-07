@@ -23,10 +23,8 @@
             {
                 "current": {
                     "selected": true,
-                    "text": "All",
-                    "value": [
-                        "$__all"
-                    ]
+                    "text": "Поле Северное",
+                    "value": "field_01"
                 },
                 "datasource": {
                     "type": "influxdb",
@@ -34,18 +32,17 @@
                 },
                 "definition": "",
                 "hide": 0,
-                "includeAll": true,
+                "includeAll": false,
                 "label": "Поле",
-                "multi": true,
+                "multi": false,
                 "name": "field_id",
                 "options": [],
-                "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: -3y)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> group(columns: [\"field_id\", \"field_name\"])\n  |> limit(n: 1)\n  |> group()\n  |> rename(columns: {field_name: \"__text\", field_id: \"__value\"})\n  |> keep(columns: [\"__text\", \"__value\"])",
+                "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: -3y)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> group(columns: [\"field_id\", \"field_name\"])\n  |> limit(n: 1)\n  |> group()\n  |> rename(columns: {field_name: \"__text\", field_id: \"__value\"})\n  |> keep(columns: [\"__text\", \"__value\"])",
                 "refresh": 1,
                 "regex": "",
                 "skipUrlSync": false,
                 "sort": 1,
-                "type": "query",
-                "allValue": ".*"
+                "type": "query"
             }
         ]
     },
@@ -128,7 +125,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"temperature_mean\")\n  |> last()\n  |> map(fn: (r) => ({\n    r with\n    latitude: float(v: r.lat),\n    longitude: float(v: r.lon),\n    name: r.field_name\n  }))\n  |> keep(columns: [\"latitude\", \"longitude\", \"name\", \"field_id\", \"_value\"])\n  |> rename(columns: {_value: \"temperature\"})"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"temperature_mean\")\n  |> last()\n  |> map(fn: (r) => ({\n    r with\n    latitude: float(v: r.lat),\n    longitude: float(v: r.lon),\n    name: r.field_name\n  }))\n  |> keep(columns: [\"latitude\", \"longitude\", \"name\", \"field_id\", \"_value\"])\n  |> rename(columns: {_value: \"temperature\"})"
                 }
             ]
         },
@@ -192,7 +189,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"temperature_mean\")\n  |> mean()\n  |> group()\n  |> mean()"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"temperature_mean\")\n  |> mean()\n  |> group()\n  |> mean()"
                 }
             ]
         },
@@ -256,7 +253,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"precipitation\")\n  |> sum()\n  |> group()\n  |> mean()"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"precipitation\")\n  |> sum()\n  |> group()\n  |> mean()"
                 }
             ]
         },
@@ -321,7 +318,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"ndvi\")\n  |> last()\n  |> group()\n  |> mean()"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"ndvi\")\n  |> last()\n  |> group()\n  |> mean()"
                 }
             ]
         },
@@ -386,7 +383,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_dynamic\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"moisture\")\n  |> filter(fn: (r) => r.depth == \"0_7cm\")\n  |> last()\n  |> group()\n  |> mean()"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_dynamic\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"moisture\")\n  |> filter(fn: (r) => r.depth == \"0_7cm\")\n  |> last()\n  |> group()\n  |> mean()"
                 }
             ]
         },
@@ -454,7 +451,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"yield_forecast\")\n  |> last()\n  |> group()\n  |> mean()"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"yield_forecast\")\n  |> last()\n  |> group()\n  |> mean()"
                 }
             ]
         },
@@ -514,7 +511,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"pest_disease\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"outbreak\")\n  |> filter(fn: (r) => r._value == 1)\n  |> group()\n  |> count()"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"pest_disease\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"outbreak\")\n  |> filter(fn: (r) => r._value == 1)\n  |> group()\n  |> count()"
                 }
             ]
         },
@@ -568,7 +565,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"temperature_mean\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"temperature_mean\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
                 }
             ]
         },
@@ -620,7 +617,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"precipitation\")\n  |> aggregateWindow(every: 1d, fn: sum, createEmpty: true)"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"precipitation\")\n  |> aggregateWindow(every: 1d, fn: sum, createEmpty: true)"
                 }
             ]
         },
@@ -694,7 +691,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"ndvi\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"ndvi\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
                 }
             ]
         },
@@ -757,7 +754,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"yield_forecast\" or r._field == \"gdd_cumulative\" or r._field == \"ndvi\")\n  |> last()\n  |> pivot(rowKey: [\"field_id\"], columnKey: [\"_field\"], valueColumn: \"_value\")"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"yield_forecast\" or r._field == \"gdd_cumulative\" or r._field == \"ndvi\")\n  |> last()\n  |> pivot(rowKey: [\"field_id\"], columnKey: [\"_field\"], valueColumn: \"_value\")"
                 }
             ]
         },
@@ -808,7 +805,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"gdd_cumulative\")\n  |> aggregateWindow(every: 1d, fn: last, createEmpty: true)"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"gdd_cumulative\")\n  |> aggregateWindow(every: 1d, fn: last, createEmpty: true)"
                 }
             ]
         },
@@ -973,7 +970,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> last()\n  |> pivot(rowKey: [\"field_id\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({\n      r with\n      field_id: if r.field_id == \"field_01\" then \"Поле Северное\"\n                else if r.field_id == \"field_02\" then \"Поле Восточное\"\n                else if r.field_id == \"field_03\" then \"Поле Центральное\"\n                else if r.field_id == \"field_04\" then \"Поле Южное\"\n                else if r.field_id == \"field_05\" then \"Поле Западное\"\n                else r.field_id\n     }))\n  |> keep(columns: [\"field_id\", \"risk_level\", \"recommendation\", \"insight\", \"soil_status\", \"pest_status\"])"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> last()\n  |> pivot(rowKey: [\"field_id\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({\n      r with\n      field_id: if r.field_id == \"field_01\" then \"Поле Северное\"\n                else if r.field_id == \"field_02\" then \"Поле Восточное\"\n                else if r.field_id == \"field_03\" then \"Поле Центральное\"\n                else if r.field_id == \"field_04\" then \"Поле Южное\"\n                else if r.field_id == \"field_05\" then \"Поле Западное\"\n                else r.field_id\n     }))\n  |> keep(columns: [\"field_id\", \"risk_level\", \"recommendation\", \"insight\", \"soil_status\", \"pest_status\"])"
                 }
             ]
         }

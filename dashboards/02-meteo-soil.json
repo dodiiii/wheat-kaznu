@@ -23,10 +23,8 @@
             {
                 "current": {
                     "selected": true,
-                    "text": "All",
-                    "value": [
-                        "$__all"
-                    ]
+                    "text": "Поле Северное",
+                    "value": "field_01"
                 },
                 "datasource": {
                     "type": "influxdb",
@@ -34,9 +32,9 @@
                 },
                 "definition": "",
                 "hide": 0,
-                "includeAll": true,
+                "includeAll": false,
                 "label": "Поле",
-                "multi": true,
+                "multi": false,
                 "name": "field_id",
                 "options": [],
                 "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: -3y)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> group(columns: [\"field_id\", \"field_name\"])\n  |> limit(n: 1)\n  |> group()\n  |> rename(columns: {field_name: \"__text\", field_id: \"__value\"})\n  |> keep(columns: [\"__text\", \"__value\"])",
@@ -44,8 +42,7 @@
                 "regex": "",
                 "skipUrlSync": false,
                 "sort": 1,
-                "type": "query",
-                "allValue": ".*"
+                "type": "query"
             }
         ]
     },
@@ -222,7 +219,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"temperature_mean\" or r._field == \"temperature_max\" or r._field == \"temperature_min\" or r._field == \"humidity\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"temperature_mean\" or r._field == \"temperature_max\" or r._field == \"temperature_min\" or r._field == \"humidity\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
                 }
             ]
         },
@@ -344,7 +341,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"precipitation\" or r._field == \"wind_speed\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"precipitation\" or r._field == \"wind_speed\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
                 }
             ]
         },
@@ -459,7 +456,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"solar_radiation\" or r._field == \"evapotranspiration\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"solar_radiation\" or r._field == \"evapotranspiration\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
                 }
             ]
         },
@@ -589,7 +586,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_dynamic\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"moisture\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_dynamic\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"moisture\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
                 }
             ]
         },
@@ -699,7 +696,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_dynamic\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"temperature\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_dynamic\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"temperature\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
                 }
             ]
         },
@@ -906,7 +903,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_static\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"ph\" or r._field == \"organic_carbon\" or r._field == \"nitrogen\")\n  |> last()"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_static\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"ph\" or r._field == \"organic_carbon\" or r._field == \"nitrogen\")\n  |> last()"
                 }
             ]
         },
@@ -996,7 +993,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_static\")\n  |> filter(fn: (r) => r.field_id =~ /^${field_id:regex}$/)\n  |> filter(fn: (r) => r._field == \"sand_pct\" or r._field == \"silt_pct\" or r._field == \"clay_pct\")\n  |> last()"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_static\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"sand_pct\" or r._field == \"silt_pct\" or r._field == \"clay_pct\")\n  |> last()"
                 }
             ]
         }
