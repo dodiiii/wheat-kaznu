@@ -52,7 +52,7 @@
             "type": "text",
             "title": "",
             "gridPos": {
-                "h": 2,
+                "h": 3,
                 "w": 24,
                 "x": 0,
                 "y": 0
@@ -67,10 +67,10 @@
             "type": "geomap",
             "title": "📍 Карта полей",
             "gridPos": {
-                "h": 12,
+                "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 2
+                "y": 3
             },
             "datasource": {
                 "type": "influxdb",
@@ -137,7 +137,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 12,
-                "y": 2
+                "y": 3
             },
             "datasource": {
                 "type": "influxdb",
@@ -201,7 +201,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 16,
-                "y": 2
+                "y": 3
             },
             "datasource": {
                 "type": "influxdb",
@@ -265,7 +265,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 20,
-                "y": 2
+                "y": 3
             },
             "datasource": {
                 "type": "influxdb",
@@ -330,7 +330,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 12,
-                "y": 6
+                "y": 7
             },
             "datasource": {
                 "type": "influxdb",
@@ -395,7 +395,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 16,
-                "y": 6
+                "y": 7
             },
             "datasource": {
                 "type": "influxdb",
@@ -463,7 +463,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 20,
-                "y": 6
+                "y": 7
             },
             "datasource": {
                 "type": "influxdb",
@@ -522,8 +522,8 @@
             "gridPos": {
                 "h": 8,
                 "w": 12,
-                "x": 12,
-                "y": 10
+                "x": 0,
+                "y": 17
             },
             "datasource": {
                 "type": "influxdb",
@@ -576,8 +576,8 @@
             "gridPos": {
                 "h": 8,
                 "w": 12,
-                "x": 0,
-                "y": 14
+                "x": 12,
+                "y": 17
             },
             "datasource": {
                 "type": "influxdb",
@@ -628,8 +628,8 @@
             "gridPos": {
                 "h": 8,
                 "w": 12,
-                "x": 12,
-                "y": 18
+                "x": 0,
+                "y": 25
             },
             "datasource": {
                 "type": "influxdb",
@@ -702,8 +702,8 @@
             "gridPos": {
                 "h": 8,
                 "w": 12,
-                "x": 0,
-                "y": 22
+                "x": 12,
+                "y": 25
             },
             "datasource": {
                 "type": "influxdb",
@@ -764,9 +764,9 @@
             "title": "📈 GDD накопление по полям",
             "gridPos": {
                 "h": 8,
-                "w": 12,
-                "x": 12,
-                "y": 26
+                "w": 24,
+                "x": 0,
+                "y": 33
             },
             "datasource": {
                 "type": "influxdb",
@@ -811,13 +811,13 @@
         },
         {
             "id": 14,
-            "type": "table",
-            "title": "📋 Сводка рекомендаций и агрономических рисков (Костанай)",
+            "type": "stat",
+            "title": "🚦 Уровень угрозы",
             "gridPos": {
-                "h": 8,
-                "w": 12,
+                "h": 6,
+                "w": 4,
                 "x": 0,
-                "y": 10
+                "y": 11
             },
             "datasource": {
                 "type": "influxdb",
@@ -825,143 +825,44 @@
             },
             "fieldConfig": {
                 "defaults": {
-                    "custom": {
-                        "align": "auto",
-                        "displayMode": "auto"
-                    }
-                },
-                "overrides": [
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "field_id"
-                        },
-                        "properties": [
-                            {
-                                "id": "displayName",
-                                "value": "Поле"
-                            },
-                            {
-                                "id": "custom.width",
-                                "value": 150
-                            }
-                        ]
+                    "color": {
+                        "mode": "thresholds"
                     },
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "risk_level"
-                        },
-                        "properties": [
-                            {
-                                "id": "displayName",
-                                "value": "Уровень угрозы"
-                            },
-                            {
-                                "id": "custom.displayMode",
-                                "value": "color-background-solid"
-                            },
-                            {
-                                "id": "custom.width",
-                                "value": 130
-                            },
-                            {
-                                "id": "mappings",
-                                "value": [
-                                    {
-                                        "type": "value",
-                                        "options": {
-                                            "info": {
-                                                "text": "🟢 Норма",
-                                                "color": "green",
-                                                "index": 0
-                                            },
-                                            "warning": {
-                                                "text": "🟡 Предупреждение",
-                                                "color": "orange",
-                                                "index": 1
-                                            },
-                                            "critical": {
-                                                "text": "🔴 Опасность",
-                                                "color": "red",
-                                                "index": 2
-                                            }
-                                        }
-                                    }
-                                ]
+                    "mappings": [
+                        {
+                            "type": "value",
+                            "options": {
+                                "info": {
+                                    "text": "🟢 НОРМА",
+                                    "color": "green",
+                                    "index": 0
+                                },
+                                "warning": {
+                                    "text": "🟡 ВНИМАНИЕ",
+                                    "color": "orange",
+                                    "index": 1
+                                },
+                                "critical": {
+                                    "text": "🔴 ОПАСНОСТЬ",
+                                    "color": "red",
+                                    "index": 2
+                                }
                             }
-                        ]
-                    },
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "recommendation"
-                        },
-                        "properties": [
-                            {
-                                "id": "displayName",
-                                "value": "Рекомендуемое действие"
-                            },
-                            {
-                                "id": "custom.width",
-                                "value": 200
-                            }
-                        ]
-                    },
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "insight"
-                        },
-                        "properties": [
-                            {
-                                "id": "displayName",
-                                "value": "Агрономическое обоснование"
-                            }
-                        ]
-                    },
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "soil_status"
-                        },
-                        "properties": [
-                            {
-                                "id": "displayName",
-                                "value": "Влажность почвы (0-7 см)"
-                            },
-                            {
-                                "id": "custom.width",
-                                "value": 180
-                            }
-                        ]
-                    },
-                    {
-                        "matcher": {
-                            "id": "byName",
-                            "options": "pest_status"
-                        },
-                        "properties": [
-                            {
-                                "id": "displayName",
-                                "value": "Фитосанитарный контроль"
-                            },
-                            {
-                                "id": "custom.width",
-                                "value": 220
-                            }
-                        ]
-                    }
-                ]
+                        }
+                    ]
+                }
             },
             "options": {
-                "showHeader": true,
-                "sortBy": [
-                    {
-                        "displayName": "Уровень угрозы",
-                        "desc": true
-                    }
-                ]
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "value",
+                "colorMode": "background",
+                "graphMode": "none"
             },
             "targets": [
                 {
@@ -970,7 +871,93 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> last()\n  |> pivot(rowKey: [\"field_id\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> map(fn: (r) => ({\n      r with\n      field_id: if r.field_id == \"field_01\" then \"Поле Северное\"\n                else if r.field_id == \"field_02\" then \"Поле Восточное\"\n                else if r.field_id == \"field_03\" then \"Поле Центральное\"\n                else if r.field_id == \"field_04\" then \"Поле Южное\"\n                else if r.field_id == \"field_05\" then \"Поле Западное\"\n                else r.field_id\n     }))\n  |> keep(columns: [\"field_id\", \"risk_level\", \"recommendation\", \"insight\", \"soil_status\", \"pest_status\"])"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"risk_level\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 15,
+            "type": "stat",
+            "title": "📋 Рекомендуемое действие",
+            "gridPos": {
+                "h": 6,
+                "w": 10,
+                "x": 4,
+                "y": 11
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "fixed",
+                        "fixedColor": "semi-flat-blue"
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "textMode": "value",
+                "colorMode": "value",
+                "graphMode": "none"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"recommendation\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 16,
+            "type": "stat",
+            "title": "💡 Агрономическое обоснование",
+            "gridPos": {
+                "h": 6,
+                "w": 10,
+                "x": 14,
+                "y": 11
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "fixed",
+                        "fixedColor": "text"
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "textMode": "value",
+                "colorMode": "value",
+                "graphMode": "none"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"insight\")\n  |> last()"
                 }
             ]
         }
