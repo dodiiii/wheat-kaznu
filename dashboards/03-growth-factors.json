@@ -59,7 +59,7 @@
             },
             "options": {
                 "mode": "markdown",
-                "content": "## 🌱 Факторы роста — поле `${field_id}`\n**GDD** = Σ max(0, T_mean − 0°C)  •  **Фазы BBCH** рассчитаны по накопл. GDD  •  **NDVI** — синтетическая кривая по GDD  •  **Прогноз урожайности** — эмпирическая модель (GDD × осадки)"
+                "content": "## 🌱 Факторы роста — поле `${field_id}`\n**Период:** 2025-05-01 → 2025-09-30  •  **GDD** = Σ max(0, T_mean − 0°C)  •  **Фазы BBCH** (по накопл. GDD)  •  **NDVI** (по GDD)  •  **Прогноз урожайности** (GDD & осадки)"
             }
         },
         {
@@ -290,7 +290,9 @@
                 "reduceOptions": {
                     "calcs": [
                         "lastNotNull"
-                    ]
+                    ],
+                    "fields": "/growth_stage/",
+                    "values": false
                 },
                 "textMode": "value",
                 "graphMode": "none",
@@ -304,7 +306,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"growth_stage\")\n  |> keep(columns: [\"_time\", \"_value\", \"field_id\"])\n  |> last(column: \"_time\")"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"growth_stage\")\n  |> last()"
                 }
             ]
         },
