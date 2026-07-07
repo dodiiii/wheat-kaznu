@@ -67,7 +67,7 @@
                 "h": 14,
                 "w": 14,
                 "x": 0,
-                "y": 3
+                "y": 4
             },
             "datasource": {
                 "type": "influxdb",
@@ -130,7 +130,7 @@
                 "h": 4,
                 "w": 5,
                 "x": 14,
-                "y": 3
+                "y": 4
             },
             "datasource": {
                 "type": "influxdb",
@@ -181,7 +181,7 @@
                 "h": 4,
                 "w": 5,
                 "x": 19,
-                "y": 3
+                "y": 4
             },
             "datasource": {
                 "type": "influxdb",
@@ -232,7 +232,7 @@
                 "h": 4,
                 "w": 5,
                 "x": 14,
-                "y": 7
+                "y": 8
             },
             "datasource": {
                 "type": "influxdb",
@@ -277,7 +277,7 @@
                 "h": 4,
                 "w": 5,
                 "x": 19,
-                "y": 7
+                "y": 8
             },
             "datasource": {
                 "type": "influxdb",
@@ -322,7 +322,7 @@
                 "h": 9,
                 "w": 24,
                 "x": 0,
-                "y": 17
+                "y": 18
             },
             "datasource": {
                 "type": "influxdb",
@@ -371,7 +371,7 @@
                 "h": 7,
                 "w": 24,
                 "x": 0,
-                "y": 26
+                "y": 27
             },
             "datasource": {
                 "type": "influxdb",
@@ -414,7 +414,7 @@
                 "h": 8,
                 "w": 24,
                 "x": 0,
-                "y": 33
+                "y": 34
             },
             "datasource": {
                 "type": "influxdb",

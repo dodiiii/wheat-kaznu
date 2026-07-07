@@ -71,7 +71,7 @@ def clean_overview_layout(data):
                     "type": "influxdb",
                     "uid": "influxdb"
                 },
-                "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"risk_level\")\n  |> last()"
+                "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"risk_level\")\n  |> last()"
             }
         ]
     }
@@ -115,7 +115,7 @@ def clean_overview_layout(data):
                     "type": "influxdb",
                     "uid": "influxdb"
                 },
-                "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"recommendation\")\n  |> last()"
+                "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"recommendation\")\n  |> last()"
             }
         ]
     }
@@ -159,7 +159,7 @@ def clean_overview_layout(data):
                     "type": "influxdb",
                     "uid": "influxdb"
                 },
-                "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"insight\")\n  |> last()"
+                "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"insight\")\n  |> last()"
             }
         ]
     }
