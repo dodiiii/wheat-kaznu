@@ -867,49 +867,76 @@ def main():
     args = parser.parse_args()
 
     print("🌾 Wheat Field IoT Data Ingest Pipeline")
-    print(f"   Season:  {SEASON_START} → {SEASON_END}")
     print(f"   Fields:  {len(FIELDS)}")
     print(f"   InfluxDB: {INFLUXDB_URL}\n")
 
     all_data = {}
+    
+    seasons = [
+        ("2021-05-01", "2021-09-30"),
+        ("2022-05-01", "2022-09-30"),
+        ("2023-05-01", "2023-09-30"),
+        ("2024-05-01", "2024-09-30"),
+        ("2025-05-01", "2025-09-30"),
+    ]
+
+    global SEASON_START, SEASON_END
 
     for field in FIELDS:
         print(f"\n{'='*60}")
         print(f"  🌾 Processing {field['name']} (ID: {field['id']})")
         print(f"{'='*60}")
 
-        # 1. Fetch weather & soil from Open-Meteo
-        weather = fetch_openmeteo(field)
-        if weather is None:
-            print(f"  ⚠ Skipping {field['id']} — no data")
-            continue
+        field_weather = []
+        field_growth = []
+        field_pest = []
+        field_equip = []
+        field_insights = []
 
-        # 2. Calculate growth metrics
-        growth = calc_growth(weather, field)
-        print(f"    ✓ Growth: {len(growth)} records, final GDD={growth[-1]['gdd_cumulative']}")
+        for s_start, s_end in seasons:
+            print(f"  📅 Season: {s_start} → {s_end}")
+            SEASON_START = s_start
+            SEASON_END = s_end
 
-        # 3. Generate pest/disease
-        pest = gen_pest_disease(weather, growth, field)
-        print(f"    ✓ Pest/disease: {len(pest)} events")
+            # 1. Fetch weather & soil from Open-Meteo
+            weather = fetch_openmeteo(field)
+            if weather is None:
+                print(f"    ⚠ Skipping season {s_start} — no data")
+                continue
 
-        # 4. Generate equipment
-        equip = gen_equipment(field)
-        print(f"    ✓ Equipment: {len(equip)} track points")
+            # 2. Calculate growth metrics
+            growth = calc_growth(weather, field)
+            print(f"      ✓ Growth: {len(growth)} records, final GDD={growth[-1]['gdd_cumulative']}")
 
-        # 4b. Generate agronomic insights
-        insights = gen_agronomy_insights(weather, growth, pest, field)
-        print(f"    ✓ Agronomy insights: {len(insights)} daily records")
+            # 3. Generate pest/disease
+            pest = gen_pest_disease(weather, growth, field)
+            print(f"      ✓ Pest/disease: {len(pest)} events")
+
+            # 4. Generate equipment
+            equip = gen_equipment(field)
+            print(f"      ✓ Equipment: {len(equip)} track points")
+
+            # 4b. Generate agronomic insights
+            insights = gen_agronomy_insights(weather, growth, pest, field)
+            print(f"      ✓ Agronomy insights: {len(insights)} daily records")
+
+            # Combine
+            field_weather.extend(weather)
+            field_growth.extend(growth)
+            field_pest.extend(pest)
+            field_equip.extend(equip)
+            field_insights.extend(insights)
+
+            # Be nice to Open-Meteo (free API)
+            time.sleep(1)
 
         all_data[field["id"]] = {
-            "weather":   weather,
-            "growth":    growth,
-            "pest":      pest,
-            "equipment": equip,
-            "insights":  insights,
+            "weather":   field_weather,
+            "growth":    field_growth,
+            "pest":      field_pest,
+            "equipment": field_equip,
+            "insights":  field_insights,
         }
-
-        # Be nice to Open-Meteo (free API)
-        time.sleep(1)
 
     # Save CSVs
     print(f"\n{'='*60}")
