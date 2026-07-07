@@ -897,7 +897,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2024-01-01T00:00:00Z, stop: 2025-01-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"soil_static\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"ph\" or r._field == \"organic_carbon\" or r._field == \"nitrogen\")\n  |> last()"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_static\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"ph\" or r._field == \"organic_carbon\" or r._field == \"nitrogen\")\n  |> last()"
                 }
             ]
         },
@@ -987,7 +987,7 @@
                         "type": "influxdb",
                         "uid": "influxdb"
                     },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2024-01-01T00:00:00Z, stop: 2025-01-01T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"soil_static\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"sand_pct\" or r._field == \"silt_pct\" or r._field == \"clay_pct\")\n  |> last()"
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"soil_static\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"sand_pct\" or r._field == \"silt_pct\" or r._field == \"clay_pct\")\n  |> last()"
                 }
             ]
         }
