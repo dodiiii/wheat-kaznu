@@ -310,7 +310,7 @@
             "targets": [
                 {
                     "refId": "A",
-                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> aggregateWindow(every: 1d, fn: max, createEmpty: false)"
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> aggregateWindow(every: 1d, fn: max, createEmpty: true)"
                 }
             ]
         },
@@ -359,7 +359,7 @@
             "targets": [
                 {
                     "refId": "A",
-                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> aggregateWindow(every: 1d, fn: max, createEmpty: false)"
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> aggregateWindow(every: 1d, fn: max, createEmpty: true)"
                 }
             ]
         },
@@ -486,15 +486,15 @@
             "targets": [
                 {
                     "refId": "A",
-                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> group() |> aggregateWindow(every: 1d, fn: max, createEmpty: false)"
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"pest_disease\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"severity\") |> group() |> aggregateWindow(every: 1d, fn: max, createEmpty: true)"
                 },
                 {
                     "refId": "B",
-                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"weather\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"humidity\") |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)"
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"weather\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"humidity\") |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
                 },
                 {
                     "refId": "C",
-                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"growth\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"gdd_cumulative\") |> aggregateWindow(every: 1d, fn: last, createEmpty: false)"
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"growth\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"gdd_cumulative\") |> aggregateWindow(every: 1d, fn: last, createEmpty: true)"
                 }
             ]
         },
