@@ -40,8 +40,8 @@ FIELDS = [
     {"id": "field_05", "name": "Поле Западное",    "lat": 52.08, "lon": 63.55, "area_ha": 130},
 ]
 
-SEASON_START = "2024-05-01"
-SEASON_END   = "2024-09-30"
+SEASON_START = "2025-05-01"
+SEASON_END   = "2025-09-30"
 
 INFLUXDB_URL    = os.getenv("INFLUXDB_URL",    "http://localhost:8086")
 INFLUXDB_TOKEN  = os.getenv("INFLUXDB_TOKEN",  "wheat-monitoring-token-2024")
@@ -873,10 +873,6 @@ def main():
     all_data = {}
     
     seasons = [
-        ("2021-05-01", "2021-09-30"),
-        ("2022-05-01", "2022-09-30"),
-        ("2023-05-01", "2023-09-30"),
-        ("2024-05-01", "2024-09-30"),
         ("2025-05-01", "2025-09-30"),
     ]
 
