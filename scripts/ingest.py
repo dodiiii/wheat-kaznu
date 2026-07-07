@@ -338,11 +338,11 @@ def calc_growth(weather_data, field):
 # ─── Step 3: Generate pest/disease data ──────────────────────────────────────
 
 PEST_TYPES = [
-    "wheat_rust",      # Puccinia triticina
-    "powdery_mildew",  # Blumeria graminis
-    "fusarium",        # Fusarium head blight
-    "aphids",          # Rhopalosiphum padi
-    "septoria",        # Septoria tritici
+    "leaf_rust",     # Бурая ржавчина (Puccinia triticina)
+    "septoria",      # Септориоз (Septoria tritici)
+    "thrips",        # Пшеничный трипс (Haplothrips tritici)
+    "grain_moth",    # Серая зерновая совка (Hadena sordida)
+    "flea_beetle"    # Хлебная блошка (Phyllotreta vittula)
 ]
 
 def gen_pest_disease(weather_data, growth_data, field):
@@ -357,7 +357,7 @@ def gen_pest_disease(weather_data, growth_data, field):
         precip = wr.get("precipitation", 0) or 0
         gdd    = gr["gdd_cumulative"]
 
-        # Higher outbreak probability when humid, warm, mid-season
+        # Base weather-related probability of pest/disease pressure
         base_prob = 0.05
         if rh > 70:
             base_prob += 0.08
@@ -365,28 +365,50 @@ def gen_pest_disease(weather_data, growth_data, field):
             base_prob += 0.05
         if precip > 5:
             base_prob += 0.04
-        if 400 < gdd < 1400:
-            base_prob += 0.06  # vulnerable mid-season
 
         for pest in PEST_TYPES:
-            # Per-pest adjustments
             pest_thresh = base_prob
-            if pest == "wheat_rust" and rh > 80 and t_mean > 18:
-                pest_thresh += 0.12
-            elif pest == "fusarium" and precip > 8 and gdd > 900:
-                pest_thresh += 0.15
-            elif pest == "aphids" and t_mean > 22 and rh < 65:
-                pest_thresh += 0.10
-            elif pest == "powdery_mildew" and rh > 75:
-                pest_thresh += 0.08
-            elif pest == "septoria" and precip > 3 and rh > 70:
-                pest_thresh += 0.07
+            
+            # 1. Хлебная блошка - активна в теплые дни в начале вегетации (всходы, GDD < 450)
+            if pest == "flea_beetle":
+                if gdd < 450:
+                    pest_thresh += 0.15 if t_mean > 16 else 0.05
+                else:
+                    pest_thresh = 0.01 # Spends summer elsewhere
+            
+            # 2. Пшеничный трипс - атакует колос при колошении/цветении (GDD 700 - 1100, жара)
+            elif pest == "thrips":
+                if 700 <= gdd <= 1100:
+                    pest_thresh += 0.18 if t_mean > 20 else 0.05
+                else:
+                    pest_thresh = 0.01
+            
+            # 3. Серая зерновая совка - активна при созревании зерна (GDD > 1200, теплая сухая погода)
+            elif pest == "grain_moth":
+                if gdd > 1200:
+                    pest_thresh += 0.20 if (t_mean > 18 and rh < 65) else 0.05
+                else:
+                    pest_thresh = 0.01
+
+            # 4. Бурая ржавчина - требует высокой влажности и тепла (GDD > 600)
+            elif pest == "leaf_rust":
+                if gdd > 600 and rh > 80 and t_mean > 18:
+                    pest_thresh += 0.18
+                else:
+                    pest_thresh = max(0.01, pest_thresh - 0.05)
+
+            # 5. Септориоз - активируется частыми осадками во время цветения и налива (GDD > 800)
+            elif pest == "septoria":
+                if gdd > 800 and precip > 4 and rh > 75:
+                    pest_thresh += 0.22
+                else:
+                    pest_thresh = max(0.02, pest_thresh - 0.03)
 
             if random.random() < pest_thresh:
                 severity = min(10, max(1, int(random.gauss(
-                    3 + 4 * (pest_thresh - 0.05), 1.5
+                    3 + 5.5 * (pest_thresh - 0.05), 1.2
                 ))))
-                weed_cov = round(random.uniform(2, 25), 1)
+                weed_cov = round(random.uniform(1.5, 22.0), 1)
                 outbreak = 1 if severity >= 6 else 0
 
                 rows.append({
@@ -477,6 +499,133 @@ def gen_equipment(field):
     return rows
 
 
+# ─── Step 4b: Generate agronomy insights & recommendations ───────────────────
+
+def gen_agronomy_insights(weather_data, growth_data, pest_data, field):
+    """Generate daily agronomic action insights and risk assessment."""
+    random.seed(hash(field["id"]) + 7)
+    rows = []
+    
+    # Map pest_data by date for fast lookup
+    pest_lookup = {}
+    for row in pest_data:
+        dt = row["date"]
+        if dt not in pest_lookup:
+            pest_lookup[dt] = []
+        pest_lookup[dt].append(row)
+        
+    for wr, gr in zip(weather_data, growth_data):
+        date = wr["date"]
+        gdd = gr["gdd_cumulative"]
+        stage = gr["growth_stage"]
+        ndvi = gr["ndvi"]
+        
+        # Get soil moisture at 0-7 cm
+        m_val = wr.get("soil_moist_0_7", 0.25)
+        
+        # Determine risk level, recommendation, insights
+        risk = "info"
+        rec = "Плановый мониторинг"
+        insight = "Состояние посевов стабильное, продолжается плановый мониторинг вегетации пшеницы."
+        soil_status = f"Влажность почвы оптимальная ({int(m_val*100)}%)."
+        pest_status = "Активности вредителей не обнаружено."
+        
+        # Pests for this day
+        active_pests = pest_lookup.get(date, [])
+        max_severity = 0
+        worst_pest = None
+        for p in active_pests:
+            if p["severity"] > max_severity:
+                max_severity = p["severity"]
+                worst_pest = p["pest_type"]
+                
+        # Phase wise defaults and actions
+        if "Всходы" in stage or "3-й лист" in stage:
+            rec = "Оценка всходов"
+            insight = "Период прорастания пшеницы. Оцените густоту стояния растений. Проверьте признаки присутствия хлебной блошки на листьях."
+            if max_severity >= 5 and worst_pest == "flea_beetle":
+                rec = "Обработка от блошки 🛑"
+                insight = f"Внимание! Обнаружена хлебная блошка высокой плотности (тяжесть {max_severity}/10) на всходах. Рекомендуется обработка инсектицидом по краю поля."
+                risk = "warning"
+        elif "Кущение" in stage:
+            rec = "Азотная подкормка"
+            insight = "Активная фаза кущения пшеницы (BBCH 21-29). Оптимальный период для внесения азотных удобрений (КАС, аммиачная селитра) для кустистости."
+            if m_val < 0.16:
+                rec = "Отложить удобрения ⚠️"
+                insight = "Риск засухи! Верхний слой почвы сухой. Внесение сухих удобрений неэффективно, перенесите подкормку до выпадения осадков."
+                risk = "warning"
+        elif "Выход в трубку" in stage:
+            rec = "Экстремальный щит (гербицид)"
+            insight = "Период трубкования зерновых. Проведите фитосанитарный обход, оцените засоренность сорняками. Рекомендуется гербицидная защита."
+            if max_severity >= 5 and worst_pest == "leaf_rust":
+                rec = "Внесение фунгицидов 🛑"
+                insight = f"Обнаружена бурая ржавчина листьев (тяжесть {max_severity}/10). Риск быстрого перезаражения стебля. Срочно обработать фунгицидом."
+                risk = "critical"
+        elif "Колошение" in stage or "Цветение" in stage:
+            rec = "Защита колоса"
+            insight = "Колошение и цветение пшеницы. Критический период водопотребления. Исключите пестицидные обработки в пик цветения."
+            if max_severity >= 5 and worst_pest == "thrips":
+                rec = "Инсектицид от трипса 🛑"
+                insight = f"Критическое превышение порога вредоносности пшеничного трипса (тяжесть {max_severity}/10). Опрыскать системным инсектицидом."
+                risk = "critical"
+            elif max_severity >= 5 and worst_pest == "septoria":
+                rec = "Фунгицид от септориоза 🛑"
+                insight = f"Дожди во время колошения спровоцировали септориоз пшеницы (тяжесть {max_severity}/10). Срочно проведите фунгицидную обработку колоса."
+                risk = "critical"
+        elif "Налив зерна" in stage:
+            rec = "Мониторинг вредителей колоса"
+            insight = "Фаза налива зерна (молочно-восковая спелость). Проводите регулярные кошения сачком для выявления личинок совки."
+            if max_severity >= 5 and worst_pest == "grain_moth":
+                rec = "Дезинсекция совки 🛑"
+                insight = f"Критическая опасность! Серая зерновая совка повреждает созревающее зерно (тяжесть {max_severity}/10). Срочно внести инсектициды."
+                risk = "critical"
+        elif "Созревание" in stage:
+            rec = "Подготовка к жатве"
+            insight = "Фаза полной спелости. Подготовка комбайнов к уборочной кампании. Замеряйте влажность зерна (норма 14%)."
+            if wr.get("precipitation", 0) > 8:
+                rec = "Приостановить уборку ⚠️"
+                insight = "Осадки во время спелости. Уборочную кампанию приостановить до полного высыхания стеблестоя во избежание потерь и порчи зерна."
+                risk = "warning"
+
+        # Soil moisture triggers
+        if m_val < 0.12:
+            soil_status = f"🚨 Критическая засуха! Влажность {int(m_val*100)}%"
+            risk = "critical"
+            rec = "Орошение / Антистрессанты 🚨"
+            insight = "Влажность почвы упала до критического минимума (суховей). Рост пшеницы угнетен. Срочно применить полив или антистрессовые аминокислоты."
+        elif m_val < 0.17:
+            soil_status = f"⚠️ Дефицит влаги ({int(m_val*100)}%)"
+            if risk == "info":
+                risk = "warning"
+                rec = "Агроприемы влагосбережения"
+                insight = "Сухая почва. Приостановите глубокое рыхление и механические обработки для удержания остаточной влаги."
+
+        # Pest status string formulation
+        if max_severity > 0:
+            pest_names = {
+                "leaf_rust": "Бурая ржавчина",
+                "septoria": "Септориоз",
+                "thrips": "Пшеничный трипс",
+                "grain_moth": "Серая зерновая совка",
+                "flea_beetle": "Хлебная блошка"
+            }
+            pname = pest_names.get(worst_pest, worst_pest)
+            pest_status = f"Выявлен {pname} (тяжесть {max_severity}/10)."
+            if max_severity >= 6:
+                pest_status = f"🚨 Вспышка! {pname} превысил ЭПВ ({max_severity}/10)."
+
+        rows.append({
+            "date": date,
+            "recommendation": rec,
+            "insight": insight,
+            "risk_level": risk,
+            "soil_status": soil_status,
+            "pest_status": pest_status
+        })
+
+    return rows
+
+
 # ─── Step 5: Save CSVs ───────────────────────────────────────────────────────
 
 def save_csvs(all_data):
@@ -541,6 +690,19 @@ def save_csvs(all_data):
                     writer.writeheader()
                 writer.writerow(out)
     print(f"  📄 Saved equipment.csv")
+
+    # Agronomy insights CSV
+    with open(os.path.join(DATA_DIR, "agronomy_insights.csv"), "w", newline="") as f:
+        writer = None
+        for fid, data in all_data.items():
+            if "insights" in data:
+                for row in data["insights"]:
+                    out = {"field_id": fid, **row}
+                    if writer is None:
+                        writer = csv.DictWriter(f, fieldnames=out.keys())
+                        writer.writeheader()
+                    writer.writerow(out)
+    print(f"  📄 Saved agronomy_insights.csv")
 
 
 # ─── Step 6: Load into InfluxDB ──────────────────────────────────────────────
@@ -675,6 +837,23 @@ def load_influxdb(all_data):
         write_api.write(bucket=INFLUXDB_BUCKET, record=points)
         print(f"    ✓ equipment: {len(points)} points")
 
+        # --- Agronomy insights ---
+        if "insights" in data:
+            points = []
+            for row in data["insights"]:
+                ts = datetime.strptime(row["date"], "%Y-%m-%d")
+                p = (Point("agronomy_insights")
+                     .tag("field_id", fid)
+                     .time(ts, WritePrecision.S)
+                     .field("recommendation", row["recommendation"])
+                     .field("insight",        row["insight"])
+                     .field("risk_level",     row["risk_level"])
+                     .field("soil_status",    row["soil_status"])
+                     .field("pest_status",    row["pest_status"]))
+                points.append(p)
+            write_api.write(bucket=INFLUXDB_BUCKET, record=points)
+            print(f"    ✓ agronomy_insights: {len(points)} points")
+
     client.close()
     print("✅ All data loaded into InfluxDB")
 
@@ -717,11 +896,16 @@ def main():
         equip = gen_equipment(field)
         print(f"    ✓ Equipment: {len(equip)} track points")
 
+        # 4b. Generate agronomic insights
+        insights = gen_agronomy_insights(weather, growth, pest, field)
+        print(f"    ✓ Agronomy insights: {len(insights)} daily records")
+
         all_data[field["id"]] = {
             "weather":   weather,
             "growth":    growth,
             "pest":      pest,
             "equipment": equip,
+            "insights":  insights,
         }
 
         # Be nice to Open-Meteo (free API)

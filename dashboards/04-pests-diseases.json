@@ -25,9 +25,9 @@
                     "type": "influxdb",
                     "uid": "influxdb"
                 },
-                "query": "from(bucket: \"wheat_monitoring\") |> range(start: -3y) |> filter(fn: (r) => r._measurement == \"weather\") |> keep(columns: [\"field_id\"]) |> distinct(column: \"field_id\") |> keep(columns: [\"_value\"])",
+                "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: -3y)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> group(columns: [\"field_id\", \"field_name\"])\n  |> limit(n: 1)\n  |> group()\n  |> rename(columns: {field_name: \"__text\", field_id: \"__value\"})\n  |> keep(columns: [\"__text\", \"__value\"])",
                 "current": {
-                    "text": "field_01",
+                    "text": "Поле Северное",
                     "value": "field_01"
                 },
                 "refresh": 1,
