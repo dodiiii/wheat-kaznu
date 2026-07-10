@@ -10,7 +10,7 @@
     ],
     "timezone": "browser",
     "schemaVersion": 39,
-    "version": 1,
+    "version": 2,
     "editable": true,
     "graphTooltip": 1,
     "refresh": "",
@@ -23,7 +23,7 @@
             {
                 "current": {
                     "selected": true,
-                    "text": "Поле Северное",
+                    "text": "Поле Шелек",
                     "value": "field_01"
                 },
                 "datasource": {
@@ -59,18 +59,292 @@
             },
             "options": {
                 "mode": "markdown",
-                "content": "## 🌱 Факторы роста — поле `${field_id}`\n**Период:** 2025-05-01 → 2025-09-30  •  **GDD** = Σ max(0, T_mean − 0°C)  •  **Фазы BBCH** (по накопл. GDD)  •  **NDVI** (по GDD)  •  **Прогноз урожайности** (GDD & осадки)"
+                "content": "## 🌱 Факторы роста — поле `${field_id}` (Алматинская обл.)\n**❓ Главный вопрос:** на какой стадии посев и куда движется урожай?  \n**Порядок:** ① ИТОГ (фаза + прогноз) → ② ГЛАВНЫЙ ФАКТОР (тепло/GDD) → ③ ДЕТАЛИ (связи факторов).  \n**GDD** = Σ max(0, T_ср − 0 °C)  •  **Фазы BBCH** по накопл. GDD  •  **Период:** 2025-05-01 → 2025-09-30"
             }
+        },
+        {
+            "id": 100,
+            "type": "row",
+            "title": "① ИТОГ — где посев и сколько будет зерна",
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 3
+            },
+            "panels": []
+        },
+        {
+            "id": 3,
+            "type": "stat",
+            "title": "🌾 Текущий GDD",
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 0,
+                "y": 4
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#6E96FF",
+                                "value": null
+                            },
+                            {
+                                "color": "#73BF69",
+                                "value": 500
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 1200
+                            },
+                            {
+                                "color": "#F2495C",
+                                "value": 1700
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "textMode": "value",
+                "graphMode": "area",
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"gdd_cumulative\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "type": "stat",
+            "title": "📊 Фаза BBCH",
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 6,
+                "y": 4
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "fixed",
+                        "fixedColor": "#73BF69"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#73BF69",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "mappings": []
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "/growth_stage/",
+                    "values": false
+                },
+                "textMode": "value",
+                "graphMode": "none",
+                "colorMode": "background",
+                "orientation": "auto"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"growth_stage\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "type": "gauge",
+            "title": "🌾 Прогноз урожайности (т/га)",
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 12,
+                "y": 4
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "min": 0,
+                    "max": 6,
+                    "decimals": 1,
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#F2495C",
+                                "value": null
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 2
+                            },
+                            {
+                                "color": "#73BF69",
+                                "value": 3
+                            },
+                            {
+                                "color": "#56A64B",
+                                "value": 4
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "showThresholdLabels": true,
+                "showThresholdMarkers": true
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"yield_forecast\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "type": "stat",
+            "title": "🌿 Текущий NDVI",
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 18,
+                "y": 4
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "none",
+                    "decimals": 3,
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#F2495C",
+                                "value": null
+                            },
+                            {
+                                "color": "#FF9830",
+                                "value": 0.3
+                            },
+                            {
+                                "color": "#73BF69",
+                                "value": 0.5
+                            },
+                            {
+                                "color": "#56A64B",
+                                "value": 0.7
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ]
+                },
+                "textMode": "value",
+                "graphMode": "area",
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"ndvi\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 101,
+            "type": "row",
+            "title": "② ГЛАВНЫЙ ФАКТОР — тепло (GDD) ведёт развитие",
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 9
+            },
+            "panels": []
         },
         {
             "id": 2,
             "type": "timeseries",
             "title": "📈 Накопление GDD + Фаза роста",
             "gridPos": {
-                "h": 10,
-                "w": 16,
+                "h": 9,
+                "w": 24,
                 "x": 0,
-                "y": 4
+                "y": 10
             },
             "datasource": {
                 "type": "influxdb",
@@ -191,262 +465,27 @@
             ]
         },
         {
-            "id": 3,
-            "type": "stat",
-            "title": "🌾 Текущий GDD",
+            "id": 102,
+            "type": "row",
+            "title": "③ ДЕТАЛИ — как факторы связаны между собой",
+            "collapsed": false,
             "gridPos": {
-                "h": 5,
-                "w": 4,
-                "x": 16,
-                "y": 4
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 19
             },
-            "datasource": {
-                "type": "influxdb",
-                "uid": "influxdb"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "unit": "short",
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "#6E96FF",
-                                "value": null
-                            },
-                            {
-                                "color": "#73BF69",
-                                "value": 500
-                            },
-                            {
-                                "color": "#FF9830",
-                                "value": 1200
-                            },
-                            {
-                                "color": "#F2495C",
-                                "value": 1700
-                            }
-                        ]
-                    }
-                }
-            },
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "lastNotNull"
-                    ]
-                },
-                "textMode": "value",
-                "graphMode": "area",
-                "colorMode": "background"
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "datasource": {
-                        "type": "influxdb",
-                        "uid": "influxdb"
-                    },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"gdd_cumulative\")\n  |> last()"
-                }
-            ]
-        },
-        {
-            "id": 4,
-            "type": "stat",
-            "title": "📊 Фаза BBCH",
-            "gridPos": {
-                "h": 5,
-                "w": 4,
-                "x": 20,
-                "y": 4
-            },
-            "datasource": {
-                "type": "influxdb",
-                "uid": "influxdb"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "fixed",
-                        "fixedColor": "#73BF69"
-                    },
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "#73BF69",
-                                "value": null
-                            }
-                        ]
-                    },
-                    "mappings": []
-                }
-            },
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "lastNotNull"
-                    ],
-                    "fields": "/growth_stage/",
-                    "values": false
-                },
-                "textMode": "value",
-                "graphMode": "none",
-                "colorMode": "background",
-                "orientation": "auto"
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "datasource": {
-                        "type": "influxdb",
-                        "uid": "influxdb"
-                    },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"growth_stage\")\n  |> last()"
-                }
-            ]
-        },
-        {
-            "id": 5,
-            "type": "gauge",
-            "title": "🌾 Прогноз урожайности (т/га)",
-            "gridPos": {
-                "h": 5,
-                "w": 4,
-                "x": 16,
-                "y": 9
-            },
-            "datasource": {
-                "type": "influxdb",
-                "uid": "influxdb"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "unit": "short",
-                    "min": 0,
-                    "max": 6,
-                    "decimals": 1,
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "#F2495C",
-                                "value": null
-                            },
-                            {
-                                "color": "#FF9830",
-                                "value": 2
-                            },
-                            {
-                                "color": "#73BF69",
-                                "value": 3
-                            },
-                            {
-                                "color": "#56A64B",
-                                "value": 4
-                            }
-                        ]
-                    }
-                }
-            },
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "lastNotNull"
-                    ]
-                },
-                "showThresholdLabels": true,
-                "showThresholdMarkers": true
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "datasource": {
-                        "type": "influxdb",
-                        "uid": "influxdb"
-                    },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"yield_forecast\")\n  |> last()"
-                }
-            ]
-        },
-        {
-            "id": 6,
-            "type": "stat",
-            "title": "🌿 Текущий NDVI",
-            "gridPos": {
-                "h": 5,
-                "w": 4,
-                "x": 20,
-                "y": 9
-            },
-            "datasource": {
-                "type": "influxdb",
-                "uid": "influxdb"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "unit": "none",
-                    "decimals": 3,
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "#F2495C",
-                                "value": null
-                            },
-                            {
-                                "color": "#FF9830",
-                                "value": 0.3
-                            },
-                            {
-                                "color": "#73BF69",
-                                "value": 0.5
-                            },
-                            {
-                                "color": "#56A64B",
-                                "value": 0.7
-                            }
-                        ]
-                    }
-                }
-            },
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "lastNotNull"
-                    ]
-                },
-                "textMode": "value",
-                "graphMode": "area",
-                "colorMode": "background"
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "datasource": {
-                        "type": "influxdb",
-                        "uid": "influxdb"
-                    },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"ndvi\")\n  |> last()"
-                }
-            ]
+            "panels": []
         },
         {
             "id": 7,
             "type": "timeseries",
             "title": "🌿 NDVI + 💧 Влажность почвы (0–7 см)",
             "gridPos": {
-                "h": 9,
+                "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 14
+                "y": 20
             },
             "datasource": {
                 "type": "influxdb",
@@ -579,10 +618,10 @@
             "type": "timeseries",
             "title": "🌡️ GDD vs Температура",
             "gridPos": {
-                "h": 9,
+                "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 14
+                "y": 20
             },
             "datasource": {
                 "type": "influxdb",
@@ -714,10 +753,10 @@
             "type": "timeseries",
             "title": "📈 Прогноз урожайности + GDD + NDVI",
             "gridPos": {
-                "h": 9,
-                "w": 24,
+                "h": 8,
+                "w": 12,
                 "x": 0,
-                "y": 23
+                "y": 28
             },
             "datasource": {
                 "type": "influxdb",
@@ -883,10 +922,10 @@
             "type": "timeseries",
             "title": "🌡️ NDVI vs Температура + Осадки",
             "gridPos": {
-                "h": 9,
-                "w": 24,
-                "x": 0,
-                "y": 32
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 28
             },
             "datasource": {
                 "type": "influxdb",

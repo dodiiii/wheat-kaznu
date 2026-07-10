@@ -32,12 +32,14 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 # ─── Configuration ────────────────────────────────────────────────────────────
 
+# Almaty region, Kazakhstan — Shelek valley, Enbekshikazakh district
+# (foothill plain north of Trans-Ili Alatau, real grain-growing zone)
 FIELDS = [
-    {"id": "field_01", "name": "Поле Северное",    "lat": 52.05, "lon": 63.60, "area_ha": 120},
-    {"id": "field_02", "name": "Поле Восточное",   "lat": 52.10, "lon": 63.75, "area_ha":  95},
-    {"id": "field_03", "name": "Поле Центральное", "lat": 52.00, "lon": 63.65, "area_ha": 150},
-    {"id": "field_04", "name": "Поле Южное",       "lat": 51.95, "lon": 63.70, "area_ha": 110},
-    {"id": "field_05", "name": "Поле Западное",    "lat": 52.08, "lon": 63.55, "area_ha": 130},
+    {"id": "field_01", "name": "Поле Шелек",     "lat": 43.60, "lon": 78.25, "area_ha": 120},
+    {"id": "field_02", "name": "Поле Байсеит",   "lat": 43.55, "lon": 78.06, "area_ha":  95},
+    {"id": "field_03", "name": "Поле Малыбай",   "lat": 43.63, "lon": 78.42, "area_ha": 150},
+    {"id": "field_04", "name": "Поле Ават",      "lat": 43.47, "lon": 77.93, "area_ha": 110},
+    {"id": "field_05", "name": "Поле Каратурык", "lat": 43.51, "lon": 78.52, "area_ha": 130},
 ]
 
 SEASON_START = "2025-05-01"
@@ -70,13 +72,14 @@ BBCH_STAGES = [
     (1800, "90-99 Maturity"),
 ]
 
-# Soil statics per field (based on SoilGrids typical values for Kostanay region)
+# Soil statics per field (based on SoilGrids typical values for
+# light-chestnut / dark-chestnut soils of the Shelek valley, Almaty region)
 SOIL_STATICS = {
-    "field_01": {"ph": 7.2, "organic_carbon": 18.5, "nitrogen": 1.8, "sand": 42, "silt": 35, "clay": 23},
-    "field_02": {"ph": 7.0, "organic_carbon": 21.0, "nitrogen": 2.1, "sand": 38, "silt": 37, "clay": 25},
-    "field_03": {"ph": 7.4, "organic_carbon": 16.0, "nitrogen": 1.5, "sand": 45, "silt": 33, "clay": 22},
-    "field_04": {"ph": 6.8, "organic_carbon": 23.5, "nitrogen": 2.4, "sand": 35, "silt": 38, "clay": 27},
-    "field_05": {"ph": 7.1, "organic_carbon": 19.2, "nitrogen": 1.9, "sand": 40, "silt": 36, "clay": 24},
+    "field_01": {"ph": 7.9, "organic_carbon": 13.5, "nitrogen": 1.3, "sand": 44, "silt": 38, "clay": 18},
+    "field_02": {"ph": 7.7, "organic_carbon": 15.0, "nitrogen": 1.5, "sand": 40, "silt": 40, "clay": 20},
+    "field_03": {"ph": 8.1, "organic_carbon": 11.5, "nitrogen": 1.1, "sand": 48, "silt": 35, "clay": 17},
+    "field_04": {"ph": 7.6, "organic_carbon": 16.5, "nitrogen": 1.6, "sand": 38, "silt": 41, "clay": 21},
+    "field_05": {"ph": 7.8, "organic_carbon": 12.8, "nitrogen": 1.2, "sand": 46, "silt": 36, "clay": 18},
 }
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────

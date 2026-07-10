@@ -8,7 +8,7 @@
     ],
     "timezone": "browser",
     "schemaVersion": 39,
-    "version": 1,
+    "version": 2,
     "editable": true,
     "graphTooltip": 1,
     "time": {
@@ -20,7 +20,7 @@
             {
                 "current": {
                     "selected": true,
-                    "text": "Поле Северное",
+                    "text": "Поле Шелек",
                     "value": "field_01"
                 },
                 "datasource": {
@@ -56,18 +56,236 @@
             },
             "options": {
                 "mode": "markdown",
-                "content": "## 🚜 Техника — поле `${field_id}`\n**Период:** 2025-05-01 → 2025-09-30  •  **Операции:** сев, удобрение, опрыскивание, уборка  •  **Техника:** трактор_01, трактор_02, опрыскиватель_01, комбайн_01"
+                "content": "## 🚜 Техника — поле `${field_id}` (Алматинская обл.)\n**❓ Главный вопрос:** как отработала техника — покрытие, скорость, простои?  \n**Порядок:** ① ИТОГ (выработка) → ② ГДЕ (треки на карте) → ③ ДЕТАЛИ (режим + журнал).  \n**Операции:** сев, удобрение, опрыскивание, уборка  •  **Техника:** трактор_01/02, опрыскиватель_01, комбайн_01"
             }
+        },
+        {
+            "id": 100,
+            "type": "row",
+            "title": "① ИТОГ — выработка за период",
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 3
+            },
+            "panels": []
+        },
+        {
+            "id": 3,
+            "type": "stat",
+            "title": "📏 Покрытие (га)",
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 0,
+                "y": 4
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "decimals": 0,
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#FF9830",
+                                "value": null
+                            },
+                            {
+                                "color": "#73BF69",
+                                "value": 50
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "max"
+                    ]
+                },
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"equipment\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"area_covered\") |> group() |> max()"
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "type": "stat",
+            "title": "🏎️ Средн. скорость (км/ч)",
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 6,
+                "y": 4
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "velocitykmh",
+                    "decimals": 1,
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#F2495C",
+                                "value": null
+                            },
+                            {
+                                "color": "#73BF69",
+                                "value": 5
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "mean"
+                    ]
+                },
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"equipment\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"speed\") |> group() |> mean()"
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "type": "stat",
+            "title": "📊 Кол-во точек",
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 12,
+                "y": 4
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#6E96FF",
+                                "value": null
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "count"
+                    ]
+                },
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"equipment\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"speed\") |> group() |> count()"
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "type": "stat",
+            "title": "🔧 Операций",
+            "gridPos": {
+                "h": 5,
+                "w": 6,
+                "x": 18,
+                "y": 4
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "#73BF69",
+                                "value": null
+                            }
+                        ]
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "count"
+                    ]
+                },
+                "colorMode": "background"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"equipment\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"speed\") |> keep(columns: [\"operation\"]) |> distinct(column: \"operation\") |> count()"
+                }
+            ]
+        },
+        {
+            "id": 101,
+            "type": "row",
+            "title": "② ГДЕ — треки техники на карте поля",
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 9
+            },
+            "panels": []
         },
         {
             "id": 2,
             "type": "geomap",
             "title": "📍 Треки техники",
             "gridPos": {
-                "h": 14,
-                "w": 14,
+                "h": 10,
+                "w": 24,
                 "x": 0,
-                "y": 4
+                "y": 10
             },
             "datasource": {
                 "type": "influxdb",
@@ -124,206 +342,27 @@
             ]
         },
         {
-            "id": 3,
-            "type": "stat",
-            "title": "📏 Покрытие (га)",
+            "id": 102,
+            "type": "row",
+            "title": "③ ДЕТАЛИ — скорость, статусы, журнал операций",
+            "collapsed": false,
             "gridPos": {
-                "h": 4,
-                "w": 5,
-                "x": 14,
-                "y": 4
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 20
             },
-            "datasource": {
-                "type": "influxdb",
-                "uid": "influxdb"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "unit": "short",
-                    "decimals": 0,
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "#FF9830",
-                                "value": null
-                            },
-                            {
-                                "color": "#73BF69",
-                                "value": 50
-                            }
-                        ]
-                    }
-                }
-            },
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "max"
-                    ]
-                },
-                "colorMode": "background"
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"equipment\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"area_covered\") |> group() |> max()"
-                }
-            ]
-        },
-        {
-            "id": 4,
-            "type": "stat",
-            "title": "🏎️ Средн. скорость (км/ч)",
-            "gridPos": {
-                "h": 4,
-                "w": 5,
-                "x": 19,
-                "y": 4
-            },
-            "datasource": {
-                "type": "influxdb",
-                "uid": "influxdb"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "unit": "velocitykmh",
-                    "decimals": 1,
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "#F2495C",
-                                "value": null
-                            },
-                            {
-                                "color": "#73BF69",
-                                "value": 5
-                            }
-                        ]
-                    }
-                }
-            },
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "mean"
-                    ]
-                },
-                "colorMode": "background"
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"equipment\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"speed\") |> group() |> mean()"
-                }
-            ]
-        },
-        {
-            "id": 5,
-            "type": "stat",
-            "title": "📊 Кол-во точек",
-            "gridPos": {
-                "h": 4,
-                "w": 5,
-                "x": 14,
-                "y": 8
-            },
-            "datasource": {
-                "type": "influxdb",
-                "uid": "influxdb"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "#6E96FF",
-                                "value": null
-                            }
-                        ]
-                    }
-                }
-            },
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "count"
-                    ]
-                },
-                "colorMode": "background"
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"equipment\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"speed\") |> group() |> count()"
-                }
-            ]
-        },
-        {
-            "id": 6,
-            "type": "stat",
-            "title": "🔧 Операций",
-            "gridPos": {
-                "h": 4,
-                "w": 5,
-                "x": 19,
-                "y": 8
-            },
-            "datasource": {
-                "type": "influxdb",
-                "uid": "influxdb"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "thresholds": {
-                        "mode": "absolute",
-                        "steps": [
-                            {
-                                "color": "#73BF69",
-                                "value": null
-                            }
-                        ]
-                    }
-                }
-            },
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "count"
-                    ]
-                },
-                "colorMode": "background"
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "query": "from(bucket: \"wheat_monitoring\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r._measurement == \"equipment\") |> filter(fn: (r) => r.field_id == \"${field_id}\") |> filter(fn: (r) => r._field == \"speed\") |> keep(columns: [\"operation\"]) |> distinct(column: \"operation\") |> count()"
-                }
-            ]
+            "panels": []
         },
         {
             "id": 7,
             "type": "timeseries",
             "title": "🏎️ Скорость техники",
             "gridPos": {
-                "h": 9,
+                "h": 7,
                 "w": 24,
                 "x": 0,
-                "y": 18
+                "y": 21
             },
             "datasource": {
                 "type": "influxdb",
@@ -369,10 +408,10 @@
             "type": "state-timeline",
             "title": "📋 Статусы операций",
             "gridPos": {
-                "h": 7,
+                "h": 6,
                 "w": 24,
                 "x": 0,
-                "y": 27
+                "y": 28
             },
             "datasource": {
                 "type": "influxdb",

@@ -9,7 +9,7 @@
     ],
     "timezone": "browser",
     "schemaVersion": 39,
-    "version": 1,
+    "version": 2,
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 1,
@@ -23,7 +23,7 @@
             {
                 "current": {
                     "selected": true,
-                    "text": "Поле Северное",
+                    "text": "Поле Шелек",
                     "value": "field_01"
                 },
                 "datasource": {
@@ -59,8 +59,193 @@
             },
             "options": {
                 "mode": "markdown",
-                "content": "## 🌾 IoT-мониторинг пшеничных полей — Костанайская область\n**Источники:** Open-Meteo Historical API (ERA5), SoilGrids  •  **Период:** 2025-05-01 → 2025-09-30  •  **Лицензия:** CC BY 4.0"
+                "content": "## 🌾 Обзор хозяйства — Алматинская область (Шелекская долина, Енбекшиказахский р-н)\n**❓ Главный вопрос дашборда:** в каком состоянии хозяйство сегодня и где нужно вмешаться?  \n**Как читать:** сверху вниз — ① ИТОГ (что делать) → ② ПРИЧИНЫ (ключевые показатели + карта) → ③ ДЕТАЛИ (динамика за сезон).  \n**Источники:** Open-Meteo Historical API (ERA5), SoilGrids  •  **Период:** 2025-05-01 → 2025-09-30  •  **Лицензия:** CC BY 4.0"
             }
+        },
+        {
+            "id": 100,
+            "type": "row",
+            "title": "① ИТОГ — приговор по полю и что делать сегодня",
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 3
+            },
+            "panels": []
+        },
+        {
+            "id": 14,
+            "type": "stat",
+            "title": "🚦 Уровень угрозы",
+            "gridPos": {
+                "h": 6,
+                "w": 6,
+                "x": 0,
+                "y": 4
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "type": "value",
+                            "options": {
+                                "info": {
+                                    "text": "🟢 НОРМА",
+                                    "color": "green",
+                                    "index": 0
+                                },
+                                "warning": {
+                                    "text": "🟡 ВНИМАНИЕ",
+                                    "color": "orange",
+                                    "index": 1
+                                },
+                                "critical": {
+                                    "text": "🔴 ОПАСНОСТЬ",
+                                    "color": "red",
+                                    "index": 2
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "/risk_level/",
+                    "values": false
+                },
+                "textMode": "value",
+                "colorMode": "background",
+                "graphMode": "none"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"risk_level\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 15,
+            "type": "stat",
+            "title": "📋 Рекомендуемое действие",
+            "gridPos": {
+                "h": 6,
+                "w": 10,
+                "x": 6,
+                "y": 4
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "fixed",
+                        "fixedColor": "white"
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "/recommendation/",
+                    "values": false
+                },
+                "textMode": "value",
+                "colorMode": "value",
+                "graphMode": "none"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"recommendation\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 16,
+            "type": "stat",
+            "title": "💡 Агрономическое обоснование",
+            "gridPos": {
+                "h": 6,
+                "w": 8,
+                "x": 16,
+                "y": 4
+            },
+            "datasource": {
+                "type": "influxdb",
+                "uid": "influxdb"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "fixed",
+                        "fixedColor": "text"
+                    }
+                }
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "/insight/",
+                    "values": false
+                },
+                "textMode": "value",
+                "colorMode": "value",
+                "graphMode": "none",
+                "text": {
+                    "valueSize": 20
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "influxdb"
+                    },
+                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"insight\")\n  |> last()"
+                }
+            ]
+        },
+        {
+            "id": 101,
+            "type": "row",
+            "title": "② ПРИЧИНЫ — ключевые показатели и карта хозяйства",
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 10
+            },
+            "panels": []
         },
         {
             "id": 2,
@@ -70,7 +255,7 @@
                 "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 3
+                "y": 11
             },
             "datasource": {
                 "type": "influxdb",
@@ -138,7 +323,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 12,
-                "y": 3
+                "y": 11
             },
             "datasource": {
                 "type": "influxdb",
@@ -202,7 +387,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 16,
-                "y": 3
+                "y": 11
             },
             "datasource": {
                 "type": "influxdb",
@@ -266,7 +451,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 20,
-                "y": 3
+                "y": 11
             },
             "datasource": {
                 "type": "influxdb",
@@ -331,7 +516,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 12,
-                "y": 7
+                "y": 15
             },
             "datasource": {
                 "type": "influxdb",
@@ -396,7 +581,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 16,
-                "y": 7
+                "y": 15
             },
             "datasource": {
                 "type": "influxdb",
@@ -464,7 +649,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 20,
-                "y": 7
+                "y": 15
             },
             "datasource": {
                 "type": "influxdb",
@@ -517,6 +702,19 @@
             ]
         },
         {
+            "id": 102,
+            "type": "row",
+            "title": "③ ДЕТАЛИ — динамика за сезон",
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 19
+            },
+            "panels": []
+        },
+        {
             "id": 9,
             "type": "timeseries",
             "title": "🌡️ Температура по полям",
@@ -524,7 +722,7 @@
                 "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 17
+                "y": 20
             },
             "datasource": {
                 "type": "influxdb",
@@ -578,7 +776,7 @@
                 "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 17
+                "y": 20
             },
             "datasource": {
                 "type": "influxdb",
@@ -630,7 +828,7 @@
                 "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 25
+                "y": 28
             },
             "datasource": {
                 "type": "influxdb",
@@ -704,7 +902,7 @@
                 "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 25
+                "y": 28
             },
             "datasource": {
                 "type": "influxdb",
@@ -767,7 +965,7 @@
                 "h": 8,
                 "w": 24,
                 "x": 0,
-                "y": 33
+                "y": 36
             },
             "datasource": {
                 "type": "influxdb",
@@ -807,165 +1005,6 @@
                         "uid": "influxdb"
                     },
                     "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"growth\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"gdd_cumulative\")\n  |> aggregateWindow(every: 1d, fn: last, createEmpty: true)"
-                }
-            ]
-        },
-        {
-            "id": 14,
-            "type": "stat",
-            "title": "🚦 Уровень угрозы",
-            "gridPos": {
-                "h": 6,
-                "w": 4,
-                "x": 0,
-                "y": 11
-            },
-            "datasource": {
-                "type": "influxdb",
-                "uid": "influxdb"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "thresholds"
-                    },
-                    "mappings": [
-                        {
-                            "type": "value",
-                            "options": {
-                                "info": {
-                                    "text": "🟢 НОРМА",
-                                    "color": "green",
-                                    "index": 0
-                                },
-                                "warning": {
-                                    "text": "🟡 ВНИМАНИЕ",
-                                    "color": "orange",
-                                    "index": 1
-                                },
-                                "critical": {
-                                    "text": "🔴 ОПАСНОСТЬ",
-                                    "color": "red",
-                                    "index": 2
-                                }
-                            }
-                        }
-                    ]
-                }
-            },
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "lastNotNull"
-                    ],
-                    "fields": "/risk_level/",
-                    "values": false
-                },
-                "textMode": "value",
-                "colorMode": "background",
-                "graphMode": "none"
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "datasource": {
-                        "type": "influxdb",
-                        "uid": "influxdb"
-                    },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"risk_level\")\n  |> last()"
-                }
-            ]
-        },
-        {
-            "id": 15,
-            "type": "stat",
-            "title": "📋 Рекомендуемое действие",
-            "gridPos": {
-                "h": 6,
-                "w": 10,
-                "x": 4,
-                "y": 11
-            },
-            "datasource": {
-                "type": "influxdb",
-                "uid": "influxdb"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "fixed",
-                        "fixedColor": "white"
-                    }
-                }
-            },
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "lastNotNull"
-                    ],
-                    "fields": "/recommendation/",
-                    "values": false
-                },
-                "textMode": "value",
-                "colorMode": "value",
-                "graphMode": "none"
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "datasource": {
-                        "type": "influxdb",
-                        "uid": "influxdb"
-                    },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"recommendation\")\n  |> last()"
-                }
-            ]
-        },
-        {
-            "id": 16,
-            "type": "stat",
-            "title": "💡 Агрономическое обоснование",
-            "gridPos": {
-                "h": 6,
-                "w": 10,
-                "x": 14,
-                "y": 11
-            },
-            "datasource": {
-                "type": "influxdb",
-                "uid": "influxdb"
-            },
-            "fieldConfig": {
-                "defaults": {
-                    "color": {
-                        "mode": "fixed",
-                        "fixedColor": "text"
-                    }
-                }
-            },
-            "options": {
-                "reduceOptions": {
-                    "calcs": [
-                        "lastNotNull"
-                    ],
-                    "fields": "/insight/",
-                    "values": false
-                },
-                "textMode": "value",
-                "colorMode": "value",
-                "graphMode": "none",
-                "text": {
-                    "valueSize": 20
-                }
-            },
-            "targets": [
-                {
-                    "refId": "A",
-                    "datasource": {
-                        "type": "influxdb",
-                        "uid": "influxdb"
-                    },
-                    "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: 2020-01-01T00:00:00Z, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"agronomy_insights\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"insight\")\n  |> last()"
                 }
             ]
         }

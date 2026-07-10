@@ -10,7 +10,7 @@
     ],
     "timezone": "browser",
     "schemaVersion": 39,
-    "version": 1,
+    "version": 2,
     "editable": true,
     "graphTooltip": 1,
     "refresh": "",
@@ -23,7 +23,7 @@
             {
                 "current": {
                     "selected": true,
-                    "text": "Поле Северное",
+                    "text": "Поле Шелек",
                     "value": "field_01"
                 },
                 "datasource": {
@@ -59,8 +59,21 @@
             },
             "options": {
                 "mode": "markdown",
-                "content": "## 🌤️ Метеоданные и почвенный профиль — поле `${field_id}`\n**Источник:** Open-Meteo Historical API (ERA5-Land)  •  **Период:** 2025-05-01 → 2025-09-30  •  **Шаг:** 1 сутки"
+                "content": "## 🌤️ Метео и почва — поле `${field_id}` (Шелекская долина, Алматинская обл.)\n**❓ Главный вопрос:** какие условия сложились на поле — в воздухе и в почве?  \n**Порядок:** ① ВОЗДУХ (погодный фон) → ② ПОЧВА: ДИНАМИКА (корневая зона) → ③ ПОЧВА: ПАСПОРТ (постоянные свойства).  \n**Источник:** Open-Meteo Historical API (ERA5-Land)  •  **Период:** 2025-05-01 → 2025-09-30  •  **Шаг:** 1 сутки"
             }
+        },
+        {
+            "id": 100,
+            "type": "row",
+            "title": "① ВОЗДУХ — погодный фон и водный баланс",
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 3
+            },
+            "panels": []
         },
         {
             "id": 2,
@@ -68,7 +81,7 @@
             "title": "🌡️ Температура воздуха + Влажность",
             "gridPos": {
                 "h": 9,
-                "w": 24,
+                "w": 12,
                 "x": 0,
                 "y": 4
             },
@@ -230,8 +243,8 @@
             "gridPos": {
                 "h": 9,
                 "w": 12,
-                "x": 0,
-                "y": 13
+                "x": 12,
+                "y": 4
             },
             "datasource": {
                 "type": "influxdb",
@@ -350,9 +363,9 @@
             "type": "timeseries",
             "title": "☀️ Солнечная радиация + 🌿 Эвапотранспирация",
             "gridPos": {
-                "h": 9,
-                "w": 12,
-                "x": 12,
+                "h": 8,
+                "w": 24,
+                "x": 0,
                 "y": 13
             },
             "datasource": {
@@ -459,6 +472,19 @@
                     "query": "from(bucket: \"wheat_monitoring\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"weather\")\n  |> filter(fn: (r) => r.field_id == \"${field_id}\")\n  |> filter(fn: (r) => r._field == \"solar_radiation\" or r._field == \"evapotranspiration\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: true)"
                 }
             ]
+        },
+        {
+            "id": 101,
+            "type": "row",
+            "title": "② ПОЧВА: ДИНАМИКА — влага и тепло в корневой зоне",
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 21
+            },
+            "panels": []
         },
         {
             "id": 5,
@@ -701,14 +727,27 @@
             ]
         },
         {
+            "id": 102,
+            "type": "row",
+            "title": "③ ПОЧВА: ПАСПОРТ — постоянные свойства поля",
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 31
+            },
+            "panels": []
+        },
+        {
             "id": 7,
             "type": "bargauge",
             "title": "🧪 Статические свойства почвы",
             "gridPos": {
-                "h": 7,
+                "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 31
+                "y": 32
             },
             "datasource": {
                 "type": "influxdb",
@@ -912,10 +951,10 @@
             "type": "piechart",
             "title": "🏔️ Гранулометрический состав",
             "gridPos": {
-                "h": 7,
+                "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 31
+                "y": 32
             },
             "datasource": {
                 "type": "influxdb",
